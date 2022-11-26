@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "comp0078-assignment2"
+version = "0.1.0"
+description = "Assignment for Supervised Learning (COMP0078) at UCL 2022"
+authors = ["Student ID: 21168615", "Student ID: 19004608"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+
+# Core dependencies
+numpy="~1.23.4"
+scipy="~1.9.3"
+pandas="~1.5.1"
+jax="~0.3"
+jaxlib="~0.3"
+matplotlib="~3.6.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

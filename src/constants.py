@@ -1,0 +1,4 @@
+OUTPUTS_FOLDER = "outputs"
+DATA_FOLDER = "data"
+
+DEFAULT_SEED = 42
