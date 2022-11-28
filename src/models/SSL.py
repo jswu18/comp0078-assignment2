@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn import KDTree
+from sklearn.neighbors import KDTree
 
 def _make_graph_matrix(X):
     tree = KDTree(X)
