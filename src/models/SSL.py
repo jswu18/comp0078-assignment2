@@ -1,32 +1,36 @@
 import numpy as np
-from sklearn.neighbors import KDTree
-
-def _make_graph_matrix(X):
-    tree = KDTree(X)
-    n = X.shape[0]
-    graph = tree.query(X, k = 4)[1][:,1:]
-    W = np.zeros((n,n))
-    for i in range(n):
-        W[i,graph[i,:]] = 1
-        W[graph[i,:],i] = 1
-    return W
 
 
-def laplacian_interpolation(X: np.ndarray, y: int) -> np.ndarray:
-    """ 
-    Inputs:
-     
-    D: graph degree matrix
-    w: graph adjacency matrix (both nxn)
+class LaplacianInterpolation():
+    def __init__(self):
+        self.W = None
 
-    Note: we have ordered our graph nodes so the first l datapoints are the 
-    labelled datapoints.
+    def predict(self, W, y):
+        """ 
+        Inputs:
+        
+        X : design matrix of input variables
+        y : set of labels for x_1, ..., x_l
 
-    The following expression was given in the paper provided, and hence used in
-    this example for a closed-form solution.
+        Note: we have ordered our graph nodes so the first l datapoints are the 
+        labelled datapoints.
 
-    """
-    W = _make_graph_matrix(X)
-    s = y.shape[0]
-    D = np.diag(W.sum(0))
-    return np.sign(np.linalg.solve(D[s:,s:] - W[s:,s:], W[s:,:s] @ y))
+        The following expression was given in the paper provided, and hence used in
+        this example for a closed-form solution.
+
+        """
+        s = y.shape[0]
+        D = np.diag(W.sum(0))
+        return np.sign(np.linalg.lstsq(D[s:,s:] - W[s:,s:], W[s:,:s] @ y, rcond = None)[0])
+
+
+class LaplacianKernelInterpolation():
+    def __init__(self):
+        pass
+
+    def predict(self, W, y):        
+        L = np.diag(W.sum(0)) - W
+        m = y.shape[0]
+        L_pinv = np.linalg.pinv(L)
+        alpha = np.linalg.pinv(L_pinv[:m,:m]) @ y
+        return np.sign(L_pinv[:m,:].T @ alpha)[m:]
