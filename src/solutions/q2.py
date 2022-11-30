@@ -3,14 +3,16 @@ from src.models.SSL import LaplacianInterpolation, LaplacianKernelInterpolation
 import os
 import numpy as np
 import pandas as pd
+import dataframe_image as dfi
+
 
 outpath =  os.path.join('outputs', 'part2')
 DATAPATH50 = os.path.join('data','dtrain13_50.dat')
 DATAPATH100 = os.path.join('data','dtrain13_100.dat')
 DATAPATH200 = os.path.join('data','dtrain13_200.dat')
 DATAPATH400 = os.path.join('data','dtrain13_400.dat')
-REPORT_LAPLACIAN_OUTPATH = os.path.join(outpath, 'laplacian_interpolation_report')
-REPORT_LAPLACIAN_KERNEL_OUTPATH = os.path.join(outpath, 'laplacian_kernel_interpolation_report')
+REPORT_LAPLACIAN_OUTPATH = os.path.join(outpath, 'laplacian_interpolation_report.png')
+REPORT_LAPLACIAN_KERNEL_OUTPATH = os.path.join(outpath, 'laplacian_kernel_interpolation_report.png')
 
 def experimental_report(
     model,
@@ -34,11 +36,17 @@ def experimental_report(
 def write_report_to_csv(means, stds, outpath):
     df = pd.DataFrame(means).round(2).astype('str')
     df2 = pd.DataFrame(stds).round(4).astype('str')
-
     report = df + '±' + df2
     report.columns = [1,2,4,8,16]
     report.index = [50,100,200,400]
-    report.to_csv(outpath)
+    report = pd.concat(
+                        [pd.concat(
+                            [report],
+                            keys=['# of known labels (per class)'], axis=1)],
+                        keys=['accuracy']
+                    )
+    dfi.export(report,outpath)
+
 
 def q2():
     datasets = []
