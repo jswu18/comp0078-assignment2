@@ -226,6 +226,7 @@ def q2(
     number_of_folds,
     labels,
     df_performance_path,
+    df_confusion_matrix_path,
 ):
     number_of_parameters = len(kernel_parameters)
     number_classes = data.y_train.shape[2]
@@ -294,16 +295,28 @@ def q2(
         index="Test Error Rate",
     ).to_csv(df_performance_path)
 
-    # confusion_matrix = np.zeros((number_of_runs, number_classes, number_classes))
-    # for i in range(number_of_runs):
-    #     np.add.at(
-    #         confusion_matrix[i, ...],
-    #         (np.argmax(data.y_test[i, ...], axis=-1), np.argmax(test_predictions[i, ...], axis=-1)),
-    #         1
-    #     )
-    #     np.fill_diagonal(confusion_matrix[i, ...], 0)
-    # df = pd.DataFrame(
-    #     confusion_matrix,
-    #     columns=labels,
-    # )
-    # df.index = labels
+    confusion_matrix = np.zeros((number_of_runs, number_classes, number_classes))
+    for i in range(number_of_runs):
+        np.add.at(
+            confusion_matrix[i, ...],
+            (np.argmax(data.y_test[i, ...], axis=-1), np.argmax(test_predictions[i, ...], axis=-1)),
+            1
+        )
+    confusion_matrix = confusion_matrix / confusion_matrix.sum(axis=2)[..., None]
+    confusion_mean = np.round(100*confusion_matrix.mean(axis=0), 2)
+    np.fill_diagonal(confusion_mean, 0)
+    confusion_stdev = np.round(100*confusion_matrix.std(axis=0))
+    np.fill_diagonal(confusion_stdev, 0)
+
+    df = pd.DataFrame(
+        [
+            [
+                f"{confusion_mean[i, j]}%±{confusion_stdev[i, j]}%"
+                for j in range(number_classes)
+            ]
+            for i in range(number_classes)
+        ],
+        columns=labels,
+    )
+    df.index = labels
+    df.to_csv(df_confusion_matrix_path)
