@@ -50,9 +50,9 @@ def write_report_to_csv(means, stds, outpath):
 
 def q2():
     datasets = []
-    for path in [DATAPATH50,DATAPATH100,DATAPATH200,DATAPATH400]:
+    for path in [DATAPATH50, DATAPATH100, DATAPATH200, DATAPATH400]:
         data = np.genfromtxt(path)
-        data[:,0] -= 2
+        data[:, 0] -= 2
         datasets.append(data)
     means, stds = experimental_report(LaplacianInterpolation(), datasets, n_iters = 20)
     write_report_to_csv(means, stds, outpath = REPORT_LAPLACIAN_OUTPATH)
@@ -60,8 +60,6 @@ def q2():
     means, stds = experimental_report(LaplacianKernelInterpolation(), datasets, n_iters = 20)
     write_report_to_csv(means, stds, outpath = REPORT_LAPLACIAN_KERNEL_OUTPATH)
 
+
 if __name__ == '__main__':
     q2()
-
-
-

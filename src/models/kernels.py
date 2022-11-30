@@ -41,7 +41,9 @@ class BaseKernel(ABC):
         x = jnp.atleast_2d(x)
         y = jnp.atleast_2d(y)
 
-        assert x.shape[1] == y.shape[1], f"Dimension Mismatch: {x.shape[1]=} != {y.shape[1]=}"
+        assert (
+            x.shape[1] == y.shape[1]
+        ), f"Dimension Mismatch: {x.shape[1]=} != {y.shape[1]=}"
 
         return vmap(
             lambda x_i: vmap(
@@ -62,9 +64,7 @@ class BaseKernel(ABC):
 
     @classmethod
     @abstractmethod
-    def tree_unflatten(
-        cls, aux_data: Dict[str, Any], children: Tuple
-    ) -> BaseKernel:
+    def tree_unflatten(cls, aux_data: Dict[str, Any], children: Tuple) -> BaseKernel:
         """
         To have JIT-compiled class methods by registering the type as a custom PyTree object.
         As referenced in:

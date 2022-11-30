@@ -26,7 +26,9 @@ def split_train_test_data(
     x: np.ndarray, y: np.ndarray, train_percentage: float
 ) -> TrainTestData:
     n, _ = x.shape
-    test_indices = np.random.choice(np.arange(n), int((1-train_percentage) * n), replace=False)
+    test_indices = np.random.choice(
+        np.arange(n), int(np.round((1 - train_percentage) * n)), replace=False
+    )
     return _build_train_test_data(x, y, indices=test_indices)
 
 
@@ -57,6 +59,7 @@ def one_hot_encode(shifted_labels: np.ndarray) -> np.ndarray:
     return 2 * one_hot_encoding - 1
 
 
+<<<<<<< Updated upstream
 def ssl_data_sample(y, sample_size):
     idxs = np.random.choice(list(np.where(y == -1.)[0]), size = sample_size, replace = False).tolist()
     idxs += np.random.choice(list(np.where(y == 1.)[0]), size = sample_size, replace = False).tolist()
@@ -73,3 +76,19 @@ def KNN_adjacency_matrix(X,k):
         W[i,graph[i,:]] = 1
         W[graph[i,:],i] = 1
     return W
+=======
+def ssl_data_sample(data, sample_size):
+    idxs = np.random.choice(
+        list(np.where(data[:, 0] == -1.0)[0]), size=sample_size, replace=False
+    ).tolist()
+    idxs += np.random.choice(
+        list(np.where(data[:, 0] == 1.0)[0]), size=sample_size, replace=False
+    ).tolist()
+    temp = np.concatenate((data[idxs], np.delete(data, idxs, axis=0)))
+    X, y_train, y_test = (
+        temp[:, 1:],
+        temp[: 2 * sample_size, 0],
+        temp[2 * sample_size :, 0],
+    )
+    return X, y_train, y_test
+>>>>>>> Stashed changes

@@ -7,7 +7,9 @@ from typing import Dict, Any, Tuple
 
 class Perceptron:
     @staticmethod
-    def train(w: np.ndarray, gram: np.ndarray, y: np.ndarray, number_of_epochs: int) -> np.ndarray:
+    def train(
+        w: np.ndarray, gram: np.ndarray, y: np.ndarray, number_of_epochs: int
+    ) -> np.ndarray:
         """
 
         :param w:
@@ -25,7 +27,9 @@ class Perceptron:
                 correct_prediction_indicator = jnp.multiply(y[i], prediction)
 
                 # zero if prediction was incorrect
-                clipped_correct_prediction_indicator = correct_prediction_indicator.clip(0, 1)
+                clipped_correct_prediction_indicator = (
+                    correct_prediction_indicator.clip(0, 1)
+                )
 
                 # mask weights to update
                 update_mask = ~clipped_correct_prediction_indicator.astype(bool)
