@@ -65,6 +65,12 @@ def _train_and_test(
     kernel_parameters,
     number_of_epochs,
 ):
+    # train_gram = np.array([kernel_class(
+    #         data.x_train, **{kernel_parameter_name: kernel_parameter}
+    #     ) for kernel_parameter in kernel_parameters])
+    # test_gram = np.array([kernel_class(
+    #         data.x_train, data.x_test, **{kernel_parameter_name: kernel_parameter}
+    #     ) for kernel_parameter in kernel_parameters])
     train_gram = vmap(
         lambda kernel_parameter: kernel_class(
             data.x_train, **{kernel_parameter_name: kernel_parameter}

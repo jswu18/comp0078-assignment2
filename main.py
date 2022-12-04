@@ -18,8 +18,8 @@ from src.models.kernels import PolynomialKernel, GaussianKernel
 import jax
 
 if __name__ == "__main__":
-    jax.config.update("jax_platform_name", "cpu")
-    jax.config.update("jax_enable_x64", True)
+    # jax.config.update("jax_platform_name", "cpu")
+    # jax.config.update("jax_enable_x64", True)
 
     if not os.path.exists(OUTPUTS_FOLDER):
         os.makedirs(OUTPUTS_FOLDER)
