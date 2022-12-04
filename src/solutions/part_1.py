@@ -1,20 +1,14 @@
 from dataclasses import dataclass
+
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import jax.numpy as jnp
 from jax import vmap
+from typing import List, Tuple
 
 from src.models.helpers import TrainTestData, make_folds
-from src.models.perceptron import Perceptron
+from src.models import perceptron
 from src.models.kernels import BaseKernel
-
-def _convert_to_scientific_notation(x: float) -> str:
-    """
-    Convert value to string in scientific notation
-    :param x: value to convert
-    :return: string of x in scientific notation
-    """
-    return "{:.2e}".format(float(x))
 
 
 @dataclass
@@ -39,176 +33,140 @@ class Performance:
         return df
 
 
-def _build_folds_data(x, y, number_of_folds):
-    x_train = []
-    y_train = []
-    x_test = []
-    y_test = []
-    number_of_runs = x.shape[0]
-    for i in range(number_of_runs):
-        folds = make_folds(
-            x=x[i],
-            y=y[i],
-            number_of_folds=number_of_folds,
-        )
-        min_fold_size_train = np.min([fold.x_train.shape[0] for fold in folds])
-        x_train.append(np.vstack([fold.x_train[None, :min_fold_size_train, ...] for fold in folds]))
-        y_train.append(np.vstack([fold.y_train[None, :min_fold_size_train, ...] for fold in folds]))
+def _analyse_prediction(actuals, predictions) -> Tuple[np.ndarray, np.ndarray]:
+    """
 
-        min_fold_size_test = np.min([fold.x_test.shape[0] for fold in folds])
-        x_test.append(np.vstack([fold.x_test[None, :min_fold_size_test, ...] for fold in folds]))
-        y_test.append(np.vstack([fold.y_test[None, :min_fold_size_test, ...] for fold in folds]))
-    return TrainTestData(
-        x_train=np.swapaxes(np.array(x_train), 0, 1),
-        y_train=np.swapaxes(np.array(y_train), 0, 1),
-        x_test=np.swapaxes(np.array(x_test), 0, 1),
-        y_test=np.swapaxes(np.array(y_test), 0, 1),
+    :param actuals: (N_1,...,N_M, number_of_test_points, number_classes)
+    :param predictions: (number_parameters, N_1,...,N_M, number_of_test_points, number_classes)
+    :return: comparison of labels (number_parameters, N_1,...,N_M, number_of_test_points)
+             and
+             confusion matrix
+    """
+    number_of_parameters = predictions.shape[0]
+    number_of_classes = predictions.shape[-1]
+    actual_classes = np.argmax(actuals, axis=-1)
+    prediction_classes = np.argmax(predictions, axis=-1)
+
+    confusion_matrix = np.zeros(
+        (number_of_parameters, number_of_classes, number_of_classes)
     )
-
-
-def _train(
-    weights,
-    x_train,
-    y_train,
-    number_of_epochs,
-    kernel_class,
-    kernel_parameters,
-    kernel_parameter_name,
-):
-    return vmap(
-        lambda weights_for_a_parameter, kernel_parameter: vmap(
-            lambda w, x, y: Perceptron.train(
-                w,
-                kernel_class(x, **{kernel_parameter_name: kernel_parameter}),
-                y,
-                number_of_epochs,
-            )
-        )(weights_for_a_parameter, x_train, y_train)
-    )(weights, kernel_parameters)
-
-
-def _predict(
-    weights, x_train, x, kernel_class, kernel_parameters, kernel_parameter_name
-):
-    return vmap(
-        lambda weights_for_a_parameter, kernel_parameter: vmap(
-            lambda w, x_train, x_i: Perceptron.predict(
-                w,
-                kernel_class(x_train, x_i, **{kernel_parameter_name: kernel_parameter}),
-            )
-        )(weights_for_a_parameter, x_train, x)
-    )(weights, kernel_parameters)
-
-
-def _performance(actuals, predictions) -> Performance:
-    comparisons = vmap(
-        lambda prediction: (
-            jnp.argmax(prediction, axis=1) != jnp.argmax(actuals, axis=-1)
+    for i in range(number_of_parameters):
+        np.add.at(
+            confusion_matrix[i, ...], (actual_classes, prediction_classes[i, ...]), 1
         )
-    )(predictions)
-    return Performance(
-        mean=np.mean(np.mean(comparisons, axis=-1), axis=-1),
-        stdev=np.std(np.mean(comparisons, axis=-1), axis=-1),
-    )
+    return actual_classes[None, ...] == prediction_classes, confusion_matrix
 
 
-def _performance_k_folds(actuals, predictions) -> np.ndarray:
-    comparisons = vmap(
-        lambda prediction: (
-            jnp.argmax(prediction, axis=1) != jnp.argmax(actuals, axis=-1)
-        )
-    )(predictions)
-    return np.mean(comparisons, axis=-1)
-
-
-def _train_optimal_parameters(
-        weights, kernel_parameters, x_train, y_train, kernel_class, kernel_parameter_name, number_of_epochs
-):
-    return vmap(
-        lambda w, kernel_parameter, x, y: Perceptron.train(
-                w,
-                kernel_class(x, **{kernel_parameter_name: kernel_parameter}),
-                y,
-                number_of_epochs,
-            )
-    )(weights, kernel_parameters, x_train, y_train)
-
-
-def _predict_optimal_parameters(
-        weights, kernel_parameters, x_train, x_test, kernel_class, kernel_parameter_name
-):
-    predictions= vmap(
-        lambda w, kernel_parameter, x, y: Perceptron.predict(
-                w,
-                kernel_class(x, y, **{kernel_parameter_name: kernel_parameter}),
-            )
-    )(weights, kernel_parameters, x_train, x_test)
-    return np.swapaxes(predictions, 1, 2)
-
-
-def _performance_optimal_parameters(actuals, predictions) -> Performance:
-    comparisons = jnp.argmax(predictions, axis=-1) != jnp.argmax(actuals, axis=-1)
-    return Performance(
-        mean=np.mean(np.mean(comparisons, axis=-1)).reshape(1, 1),
-        stdev=np.std(np.mean(comparisons, axis=-1)).reshape(1, 1),
-    )
-
-
-def q1(
+def _train_and_test(
+    w,
     data: TrainTestData,
+    kernel_class: BaseKernel,
+    kernel_parameter_name,
+    kernel_parameters,
+    number_of_epochs,
+):
+    train_gram = vmap(
+        lambda kernel_parameter: kernel_class(
+            data.x_train, **{kernel_parameter_name: kernel_parameter}
+        )
+    )(kernel_parameters)
+    test_gram = vmap(
+        lambda kernel_parameter: kernel_class(
+            data.x_train, data.x_test, **{kernel_parameter_name: kernel_parameter}
+        )
+    )(kernel_parameters)
+    weights = perceptron.train(
+        w=w,
+        gram=train_gram,
+        y=data.y_train,
+        number_of_epochs=number_of_epochs,
+    )
+
+    train_predictions = perceptron.predict(weights, train_gram)
+    test_predictions = perceptron.predict(weights, test_gram)
+    train_comparisons, _ = _analyse_prediction(data.y_train, train_predictions)
+    test_comparisons, test_confusion_matrix = _analyse_prediction(
+        data.y_test, test_predictions
+    )
+    return (
+        w,
+        np.mean(~train_comparisons, axis=-1),
+        np.mean(~test_comparisons, axis=-1),
+        test_confusion_matrix,
+    )
+
+
+def _q1(
+    data: List[TrainTestData],
     kernel_class: BaseKernel,
     kernel_parameters,
     kernel_parameter_name,
-    number_of_runs,
+    number_of_epochs,
+):
+    number_of_parameters = len(kernel_parameters)
+    number_classes = data[0].y_train.shape[1]
+    number_of_runs = len(data)
+    train_errors = np.zeros((number_of_parameters, number_of_runs))
+    test_errors = np.zeros((number_of_parameters, number_of_runs))
+    test_confusion_matrix = np.zeros(
+        (number_of_parameters, number_of_runs, number_classes, number_classes)
+    )
+    weights = []
+    for (
+        i,
+        data_run,
+    ) in enumerate(data):
+        number_training_points = data[i].x_train.shape[0]
+        (
+            w,
+            train_errors[:, i],
+            test_errors[:, i],
+            test_confusion_matrix[:, i, :, :],
+        ) = _train_and_test(
+            w=np.zeros((number_of_parameters, number_training_points, number_classes)),
+            data=data_run,
+            kernel_class=kernel_class,
+            kernel_parameter_name=kernel_parameter_name,
+            kernel_parameters=kernel_parameters,
+            number_of_epochs=number_of_epochs,
+        )
+        weights.append(w)
+    return train_errors, test_errors, test_confusion_matrix, weights
+
+
+def q1(
+    data: List[TrainTestData],
+    kernel_class: BaseKernel,
+    kernel_parameters,
+    kernel_parameter_name,
     number_of_epochs,
     df_performance_path,
 ):
-    number_of_parameters = len(kernel_parameters)
-    number_training_points = data.x_train.shape[1]
-    number_classes = data.y_train.shape[2]
-
-    weights = _train(
-        weights=np.zeros(
-            (number_of_parameters, number_of_runs, number_training_points, number_classes)
-        ),
-        x_train=data.x_train,
-        y_train=data.y_train,
-        number_of_epochs=number_of_epochs,
-        kernel_class=kernel_class,
-        kernel_parameters=kernel_parameters,
-        kernel_parameter_name=kernel_parameter_name,
+    train_error, test_error, _, _ = _q1(
+        data, kernel_class, kernel_parameters, kernel_parameter_name, number_of_epochs
     )
-
-    test_predictions = _predict(
-        weights=weights,
-        x_train=data.x_train,
-        x=data.x_test,
-        kernel_class=kernel_class,
-        kernel_parameters=kernel_parameters,
-        kernel_parameter_name=kernel_parameter_name,
+    train_performance = Performance(
+        mean=np.mean(train_error, axis=-1),
+        stdev=np.std(train_error, axis=-1),
     )
-
-    train_predictions = _predict(
-        weights=weights,
-        x_train=data.x_train,
-        x=data.x_train,
-        kernel_class=kernel_class,
-        kernel_parameters=kernel_parameters,
-        kernel_parameter_name=kernel_parameter_name,
+    test_performance = Performance(
+        mean=np.mean(test_error, axis=-1),
+        stdev=np.std(test_error, axis=-1),
     )
-
-    train_performance = _performance(data.y_train, train_predictions)
-    test_performance = _performance(data.y_test, test_predictions)
 
     pd.concat(
         [
             train_performance.build_df(
-                kernel_parameters=['%.2f' % x for x in kernel_parameters],
+                kernel_parameters=[
+                    "{:.1e}".format(float(x)) for x in kernel_parameters
+                ],
                 kernel_parameter_name=kernel_parameter_name,
                 index="Train",
             ),
             test_performance.build_df(
-                kernel_parameters=['%.2f' % x for x in kernel_parameters],
+                kernel_parameters=[
+                    "{:.1e}".format(float(x)) for x in kernel_parameters
+                ],
                 kernel_parameter_name=kernel_parameter_name,
                 index="Test",
             ),
@@ -217,97 +175,78 @@ def q1(
 
 
 def q2(
-    data: TrainTestData,
+    data: List[TrainTestData],
     kernel_class: BaseKernel,
     kernel_parameters,
     kernel_parameter_name,
-    number_of_runs,
     number_of_epochs,
     number_of_folds,
     labels,
     df_performance_path,
     df_confusion_matrix_path,
+    most_difficult_images_path,
 ):
     number_of_parameters = len(kernel_parameters)
-    number_classes = data.y_train.shape[2]
+    number_of_runs = len(data)
+    number_classes = data[0].y_train.shape[1]
 
-    data_k_fold = _build_folds_data(data.x_train, data.y_train, number_of_folds)
-    k_fold_number_training_points = data_k_fold.x_train.shape[2]
-    weights_k_fold = np.zeros((
-        number_of_folds, number_of_parameters, number_of_runs, k_fold_number_training_points, number_classes
-    ))
-
-    weights_k_fold = vmap(
-        lambda weight_k_fold, x_train, y_train: _train(
-            weight_k_fold,
-            x_train,
-            y_train,
-            number_of_epochs,
+    test_errors = np.zeros((number_of_parameters, number_of_runs, number_of_folds))
+    for (
+        i,
+        data_run,
+    ) in enumerate(data):
+        folds = make_folds(
+            x=data_run.x_train,
+            y=data_run.y_train,
+            number_of_folds=number_of_folds,
+        )
+        _, test_errors[:, i, :], _, _ = _q1(
+            data=folds,
             kernel_class=kernel_class,
             kernel_parameters=kernel_parameters,
             kernel_parameter_name=kernel_parameter_name,
+            number_of_epochs=number_of_epochs,
         )
-    )(weights_k_fold, data_k_fold.x_train, data_k_fold.y_train)
-
-    test_predictions = vmap(
-        lambda weight_k_fold, x_train, x_test: _predict(
-            weight_k_fold,
-            x_train=x_train,
-            x=x_test,
+    best_parameters_per_run = kernel_parameters[
+        np.argmin(np.mean(test_errors, axis=-1), axis=0)
+    ]
+    test_errors = np.zeros(number_of_runs)
+    test_confusion_matrix = np.zeros((number_of_runs, number_classes, number_classes))
+    weights = []
+    for i, best_parameter_per_run in enumerate(best_parameters_per_run):
+        _, test_errors[i], test_confusion_matrix[i, :, :], w = _q1(
+            data=[data[i]],
             kernel_class=kernel_class,
-            kernel_parameters=kernel_parameters,
+            kernel_parameters=best_parameter_per_run.reshape(
+                1,
+            ),
             kernel_parameter_name=kernel_parameter_name,
+            number_of_epochs=number_of_epochs,
         )
-    )(weights_k_fold, data_k_fold.x_train, data_k_fold.x_test)
-
-    test_performance = vmap(
-        lambda y, prediction : _performance_k_folds(y, prediction)
-    )(data_k_fold.y_test, test_predictions)
-    avg_test_performance_per_run = np.mean(test_performance, axis=0)
-    best_parameter_per_run = kernel_parameters[np.argmin(avg_test_performance_per_run, axis=0)]
-
-    # train optimal weights
-    number_training_points = data.x_train.shape[1]
-    weights = _train_optimal_parameters(
-        weights=np.zeros((len(best_parameter_per_run), number_training_points, number_classes)),
-        kernel_parameters=best_parameter_per_run,
-        x_train=data.x_train,
-        y_train=data.y_train,
-        kernel_class=kernel_class,
-        kernel_parameter_name=kernel_parameter_name,
-        number_of_epochs=number_of_epochs,
-    )
-    test_predictions = _predict_optimal_parameters(
-        weights=weights,
-        kernel_parameters=best_parameter_per_run,
-        x_train=data.x_train,
-        x_test=data.x_test,
-        kernel_class=kernel_class,
-        kernel_parameter_name=kernel_parameter_name,
-    )
-    test_performance = _performance_optimal_parameters(
-        actuals=data.y_test,
-        predictions=test_predictions
+        weights.append(w[0])
+    test_performance = Performance(
+        mean=np.mean(test_errors).reshape(
+            -1,
+        ),
+        stdev=np.std(test_errors).reshape(
+            -1,
+        ),
     )
     test_performance.build_df(
-        kernel_parameters=[f"{np.mean(best_parameter_per_run)}±{np.std(best_parameter_per_run)}"],
+        kernel_parameters=[
+            f"{'{:.1e}'.format(float(np.mean(best_parameters_per_run)))}±{'{:.1e}'.format(float(np.std(best_parameters_per_run)))}"
+        ],
         kernel_parameter_name=f"Mean Optimal {kernel_parameter_name}",
         index="Test Error Rate",
     ).to_csv(df_performance_path)
 
-    confusion_matrix = np.zeros((number_of_runs, number_classes, number_classes))
-    for i in range(number_of_runs):
-        np.add.at(
-            confusion_matrix[i, ...],
-            (np.argmax(data.y_test[i, ...], axis=-1), np.argmax(test_predictions[i, ...], axis=-1)),
-            1
-        )
-    confusion_matrix = confusion_matrix / confusion_matrix.sum(axis=2)[..., None]
-    confusion_mean = np.round(100*confusion_matrix.mean(axis=0), 2)
+    test_confusion_matrix = (
+        test_confusion_matrix / test_confusion_matrix.sum(axis=2)[..., None]
+    )
+    confusion_mean = np.round(100 * test_confusion_matrix.mean(axis=0), 2)
     np.fill_diagonal(confusion_mean, 0)
-    confusion_stdev = np.round(100*confusion_matrix.std(axis=0))
+    confusion_stdev = np.round(100 * test_confusion_matrix.std(axis=0))
     np.fill_diagonal(confusion_stdev, 0)
-
     df = pd.DataFrame(
         [
             [
@@ -320,3 +259,31 @@ def q2(
     )
     df.index = labels
     df.to_csv(df_confusion_matrix_path)
+
+    # find hardest to predict images
+    # for each model, predict on the entire dataset
+    number_data_points = data[0].x.shape[0]
+    predictions = np.zeros((number_of_runs, number_data_points, number_classes))
+    for i, w in enumerate(weights):
+        gram = kernel_class(
+            data[i].x_train,
+            data[0].x,
+            **{kernel_parameter_name: best_parameters_per_run[i]},
+        )
+        predictions[i, :, :] = perceptron.predict(w, gram)
+    comparisons, _ = _analyse_prediction(data[0].y, predictions)
+    most_difficult_image_indices = np.argpartition(np.sum(~comparisons, axis=0), -5)[
+        -5:
+    ]
+    most_difficult_images = data[0].x[most_difficult_image_indices]
+    most_difficult_labels = labels[
+        np.argmax(data[0].y[most_difficult_image_indices], axis=1)
+    ]
+    fig, ax = plt.subplots(nrows=1, ncols=len(most_difficult_image_indices))
+    for i in range(len(most_difficult_image_indices)):
+        ax[i].imshow(most_difficult_images[i].reshape(16, 16))
+        ax[i].title.set_text(f"Label={most_difficult_labels[i]}")
+    fig.suptitle("Hardest to Predict Images")
+    fig.tight_layout()
+    plt.savefig(most_difficult_images_path)
+    plt.close(fig)

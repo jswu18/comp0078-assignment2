@@ -12,6 +12,14 @@ class TrainTestData:
     x_test: np.ndarray
     y_test: np.ndarray
 
+    @property
+    def x(self):
+        return np.concatenate((self.x_train, self.x_test))
+
+    @property
+    def y(self):
+        return np.concatenate((self.y_train, self.y_test))
+
 
 def _build_train_test_data(x, y, indices):
     return TrainTestData(
@@ -55,23 +63,27 @@ def one_hot_encode(shifted_labels: np.ndarray) -> np.ndarray:
     number_classes = len(set(np.array(shifted_labels)))
     one_hot_encoding = np.eye(number_classes)[shifted_labels.astype(int)]
 
-    # return one hot encoding with (-1 , 1)
+    # one hot encoding with (-1 , 1)
     return 2 * one_hot_encoding - 1
 
 
 def ssl_data_sample(y, sample_size):
-    idxs = np.random.choice(list(np.where(y == -1.)[0]), size = sample_size, replace = False).tolist()
-    idxs += np.random.choice(list(np.where(y == 1.)[0]), size = sample_size, replace = False).tolist()
+    idxs = np.random.choice(
+        list(np.where(y == -1.0)[0]), size=sample_size, replace=False
+    ).tolist()
+    idxs += np.random.choice(
+        list(np.where(y == 1.0)[0]), size=sample_size, replace=False
+    ).tolist()
     idxs += [i for i in range(y.shape[0]) if i not in idxs]
     return idxs
 
 
-def KNN_adjacency_matrix(X,k):
+def KNN_adjacency_matrix(X, k):
     tree = KDTree(X)
     n = X.shape[0]
-    graph = tree.query(X, k)[1][:,1:]
-    W = np.zeros((n,n))
+    graph = tree.query(X, k)[1][:, 1:]
+    W = np.zeros((n, n))
     for i in range(n):
-        W[i,graph[i,:]] = 1
-        W[graph[i,:],i] = 1
+        W[i, graph[i, :]] = 1
+        W[graph[i, :], i] = 1
     return W

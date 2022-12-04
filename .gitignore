@@ -7,6 +7,9 @@ __pycache__
 # IDE
 .idea
 
+# Non-poetry package requirements
+requirements.txt
+
 # Notebook checkpoints
 *ipynb_checkpoints
 /**/*ipynb_checkpoints
