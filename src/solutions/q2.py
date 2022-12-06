@@ -4,7 +4,7 @@ import os
 import numpy as np
 import pandas as pd
 import dataframe_image as dfi
-
+import matplotlib.pyplot as plt
 
 outpath = os.path.join("outputs", "part2")
 DATAPATH50 = os.path.join("data", "dtrain13_50.dat")
@@ -15,7 +15,7 @@ REPORT_LAPLACIAN_OUTPATH = os.path.join(outpath, "laplacian_interpolation_report
 REPORT_LAPLACIAN_KERNEL_OUTPATH = os.path.join(
     outpath, "laplacian_kernel_interpolation_report.png"
 )
-
+GRAPH_LABEL_DIAGRAM_PATH = os.path.join(outpath, 'graph_label_diagram.png')
 
 def experimental_report(
     model,
@@ -38,6 +38,8 @@ def experimental_report(
                 accuracy[i, j, iter] = (
                     model.predict(W[sample, :][:, sample], y_train) == y_test
                 ).mean()
+                if i ==0:
+                    graph_edge_label_diagram(W,y,GRAPH_LABEL_DIAGRAM_PATH)
     return accuracy.mean(-1), accuracy.std(-1)
 
 
@@ -53,6 +55,26 @@ def write_report_to_csv(means, stds, outpath):
     )
     dfi.export(report, outpath)
 
+    
+def edge_colour(y1,y2):
+    if y1 != y2:
+        return 2.0
+    if y1 == -1.0:
+        return 1.0
+    else:
+        return 3.0
+
+
+def graph_edge_label_diagram(W, y, outpath):
+    edge_colours = np.zeros((y.shape[0],y.shape[0]))
+    for i, y1 in enumerate(y):
+        for j, y2 in enumerate(y):
+            edge_colours[i,j] = edge_colour(y1,y2)
+
+    W2 = W * edge_colours
+    fig = plt.imshow(W2)
+    plt.savefig(outpath)
+
 
 def q2():
     datasets = []
@@ -67,7 +89,6 @@ def q2():
         LaplacianKernelInterpolation(), datasets, n_iters=20
     )
     write_report_to_csv(means, stds, outpath=REPORT_LAPLACIAN_KERNEL_OUTPATH)
-
 
 if __name__ == "__main__":
     q2()
