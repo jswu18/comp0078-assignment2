@@ -9,8 +9,12 @@ class LaplacianInterpolation:
         """
         Inputs:
 
-        X : design matrix of input variables
+        W : 3-NN adjacency matrix for the datapoints in X
         y : set of labels for x_1, ..., x_l
+
+        Output:
+
+        y_hat: predicted labels for y_{l+1}, ... , y_{n} 
 
         Note: we have ordered our graph nodes so the first l datapoints are the
         labelled datapoints.
@@ -31,6 +35,19 @@ class LaplacianKernelInterpolation:
         pass
 
     def predict(self, W, y):
+        
+        """
+        Inputs:
+
+        W : 3-NN adjacency matrix for the datapoints in X
+        y : set of labels for x_1, ..., x_l
+
+        Output:
+        
+        y_hat: predicted labels for y_{l+1}, ... , y_{n} 
+        
+        """
+
         L = np.diag(W.sum(0)) - W
         m = y.shape[0]
         L_pinv = np.linalg.pinv(L)
