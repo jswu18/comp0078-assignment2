@@ -14,7 +14,11 @@ from src.constants import (
 )
 from src.models.helpers import one_hot_encode, split_train_test_data
 from src.models.kernels import GaussianKernel, PolynomialKernel
-from src.solutions import part_1
+from src.models.linear_regression_classifier import LinearRegressionClassifier
+from src.models.one_nn import OneNN
+from src.models.single_class_perceptron import SingleClassPerceptron
+from src.models.winnow import Winnow
+from src.solutions import part_1, part_3
 from src.solutions.part_2 import q2
 
 if __name__ == "__main__":
@@ -97,3 +101,42 @@ if __name__ == "__main__":
     if not os.path.exists(PART_2_OUTPUT_FOLDER):
         os.makedirs(PART_2_OUTPUT_FOLDER)
     q2()
+
+    # Question 3
+    PART_3_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "part3")
+    if not os.path.exists(PART_3_OUTPUT_FOLDER):
+        os.makedirs(PART_3_OUTPUT_FOLDER)
+    part_3.a(
+        model=OneNN(),
+        dimensions=np.arange(1, 11),
+        number_train_points=np.arange(1, 101),
+        number_of_trials=10,
+        m_test=20,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_one_nn.png"),
+    )
+    part_3.a(
+        model=Winnow(),
+        dimensions=np.arange(2, 11),
+        number_train_points=np.arange(2, 101),
+        number_of_trials=10,
+        m_test=20,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_winnow.png"),
+    )
+    part_3.a(
+        model=LinearRegressionClassifier(),
+        dimensions=np.arange(2, 11),
+        number_train_points=np.arange(2, 101),
+        number_of_trials=10,
+        m_test=20,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_lin_reg.png"),
+    )
+    part_3.a(
+        model=SingleClassPerceptron(
+            kernel=PolynomialKernel(), kernel_kwargs={"degree": 1}
+        ),
+        dimensions=np.arange(3, 11),
+        number_train_points=np.arange(2, 50),
+        number_of_trials=10,
+        m_test=20,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_perceptron.png"),
+    )

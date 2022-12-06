@@ -1,6 +1,22 @@
+import numpy as np
 from sklearn.neighbors import KDTree
 
+from src.models.model import Model
 
-def one_nn_predict(X_train, y_train, X_test):
-    tree = KDTree(X_train)
-    return y_train[tree.query(X_test, k=1)[1]].reshape(-1, 1)
+
+class OneNN(Model):
+    k = 1
+
+    def __init__(self, tree=None, y=None):
+        self.tree: KDTree = tree
+        self.y: np.ndarray = y
+        super().__init__()
+
+    def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> None:
+        self.tree = KDTree(x.T)
+        self.y = y
+
+    def predict(self, x: np.ndarray) -> np.ndarray:
+        return self.y[self.tree.query(x.T, k=self.k)[1]].reshape(
+            -1,
+        )
