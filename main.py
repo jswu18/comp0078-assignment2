@@ -15,7 +15,7 @@ from src.constants import (
 from src.models.helpers import one_hot_encode, split_train_test_data
 from src.models.kernels import GaussianKernel, PolynomialKernel
 from src.solutions import part_1
-from src.solutions.q2 import q2
+from src.solutions.part_2 import q2
 
 if __name__ == "__main__":
     jax.config.update("jax_platform_name", "cpu")

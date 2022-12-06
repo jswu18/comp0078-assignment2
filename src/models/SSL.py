@@ -14,7 +14,7 @@ class LaplacianInterpolation:
 
         Output:
 
-        y_hat: predicted labels for y_{l+1}, ... , y_{n} 
+        y_hat: predicted labels for y_{l+1}, ... , y_{n}
 
         Note: we have ordered our graph nodes so the first l datapoints are the
         labelled datapoints.
@@ -35,7 +35,7 @@ class LaplacianKernelInterpolation:
         pass
 
     def predict(self, W, y):
-        
+
         """
         Inputs:
 
@@ -43,9 +43,9 @@ class LaplacianKernelInterpolation:
         y : set of labels for x_1, ..., x_l
 
         Output:
-        
-        y_hat: predicted labels for y_{l+1}, ... , y_{n} 
-        
+
+        y_hat: predicted labels for y_{l+1}, ... , y_{n}
+
         """
 
         L = np.diag(W.sum(0)) - W
