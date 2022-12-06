@@ -1,8 +1,9 @@
-from sklearn.neighbors import KDTree
-import numpy as np
-import jax.numpy as jnp
 from dataclasses import dataclass
 from typing import List
+
+import jax.numpy as jnp
+import numpy as np
+from sklearn.neighbors import KDTree
 
 
 @dataclass
