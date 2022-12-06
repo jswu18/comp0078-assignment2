@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 from jax import vmap
 from typing import List, Tuple
+import dataframe_image as dfi
 
 from src.models.helpers import TrainTestData, make_folds
 from src.models import perceptron
@@ -58,7 +59,6 @@ def _analyse_prediction(actuals, predictions) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def _train_and_test(
-    w,
     data: TrainTestData,
     kernel_class: BaseKernel,
     kernel_parameter_name,
@@ -82,7 +82,6 @@ def _train_and_test(
         )
     )(kernel_parameters)
     weights = perceptron.train(
-        w=w,
         gram=train_gram,
         y=data.y_train,
         number_of_epochs=number_of_epochs,
@@ -95,7 +94,7 @@ def _train_and_test(
         data.y_test, test_predictions
     )
     return (
-        w,
+        weights,
         np.mean(~train_comparisons, axis=-1),
         np.mean(~test_comparisons, axis=-1),
         test_confusion_matrix,
@@ -122,14 +121,13 @@ def _q1(
         i,
         data_run,
     ) in enumerate(data):
-        number_training_points = data[i].x_train.shape[0]
+
         (
             w,
             train_errors[:, i],
             test_errors[:, i],
             test_confusion_matrix[:, i, :, :],
         ) = _train_and_test(
-            w=np.zeros((number_of_parameters, number_training_points, number_classes)),
             data=data_run,
             kernel_class=kernel_class,
             kernel_parameter_name=kernel_parameter_name,
@@ -160,7 +158,7 @@ def q1(
         stdev=np.std(test_error, axis=-1),
     )
 
-    pd.concat(
+    df = pd.concat(
         [
             train_performance.build_df(
                 kernel_parameters=[
@@ -177,7 +175,9 @@ def q1(
                 index="Test",
             ),
         ]
-    ).to_csv(df_performance_path)
+    ).T
+    df.to_csv(df_performance_path+".csv")
+    dfi.export(df, df_performance_path+".png")
 
 
 def q2(
@@ -238,13 +238,15 @@ def q2(
             -1,
         ),
     )
-    test_performance.build_df(
+    df_test_performance = test_performance.build_df(
         kernel_parameters=[
             f"{'{:.1e}'.format(float(np.mean(best_parameters_per_run)))}±{'{:.1e}'.format(float(np.std(best_parameters_per_run)))}"
         ],
         kernel_parameter_name=f"Mean Optimal {kernel_parameter_name}",
         index="Test Error Rate",
-    ).to_csv(df_performance_path)
+    ).T
+    df_test_performance.to_csv(df_performance_path+".csv")
+    dfi.export(df_test_performance, df_performance_path+".png")
 
     test_confusion_matrix = (
         test_confusion_matrix / test_confusion_matrix.sum(axis=2)[..., None]
@@ -264,7 +266,8 @@ def q2(
         columns=labels,
     )
     df.index = labels
-    df.to_csv(df_confusion_matrix_path)
+    df.to_csv(df_confusion_matrix_path+".csv")
+    dfi.export(df, df_confusion_matrix_path+".png")
 
     # find hardest to predict images
     # for each model, predict on the entire dataset
@@ -285,11 +288,11 @@ def q2(
     most_difficult_labels = labels[
         np.argmax(data[0].y[most_difficult_image_indices], axis=1)
     ]
-    fig, ax = plt.subplots(nrows=1, ncols=len(most_difficult_image_indices))
+    fig, ax = plt.subplots(1, len(most_difficult_image_indices))
+    fig.set_size_inches(5, 1.5)
     for i in range(len(most_difficult_image_indices)):
         ax[i].imshow(most_difficult_images[i].reshape(16, 16))
         ax[i].title.set_text(f"Label={most_difficult_labels[i]}")
-    fig.suptitle("Hardest to Predict Images")
-    fig.tight_layout()
+        ax[i].axis('off')
     plt.savefig(most_difficult_images_path)
     plt.close(fig)

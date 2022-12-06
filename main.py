@@ -45,8 +45,8 @@ if __name__ == "__main__":
         kernel_class=PolynomialKernel(),
         kernel_parameters=np.arange(1, 8),
         kernel_parameter_name="degree",
-        number_of_epochs=1,
-        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q1.csv"),
+        number_of_epochs=2,
+        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q1"),
     )
 
     part_1.q2(
@@ -56,12 +56,12 @@ if __name__ == "__main__":
         kernel_class=PolynomialKernel(),
         kernel_parameters=np.arange(1, 8),
         kernel_parameter_name="degree",
-        number_of_epochs=1,
+        number_of_epochs=2,
         number_of_folds=5,
         labels=np.sort(list(set(labels))).astype(int),
-        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q2.csv"),
-        df_confusion_matrix_path=os.path.join(PART_1_OUTPUT_FOLDER, "q2_confusion.csv"),
-        most_difficult_images_path=os.path.join(PART_1_OUTPUT_FOLDER, "q3.png"),
+        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q2"),
+        df_confusion_matrix_path=os.path.join(PART_1_OUTPUT_FOLDER, "q3_confusion"),
+        most_difficult_images_path=os.path.join(PART_1_OUTPUT_FOLDER, "q4.png"),
     )
 
     part_1.q1(
@@ -71,8 +71,8 @@ if __name__ == "__main__":
         kernel_class=GaussianKernel(),
         kernel_parameters=np.arange(2e-3, 3e-2, 4e-3),
         kernel_parameter_name="sigma",
-        number_of_epochs=1,
-        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q5_1.csv"),
+        number_of_epochs=2,
+        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q5_1"),
     )
 
     part_1.q2(
@@ -82,11 +82,11 @@ if __name__ == "__main__":
         kernel_class=GaussianKernel(),
         kernel_parameters=np.arange(2e-3, 3e-2, 4e-3),
         kernel_parameter_name="sigma",
-        number_of_epochs=1,
+        number_of_epochs=2,
         number_of_folds=5,
         labels=np.sort(list(set(labels))).astype(int),
-        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q5_2.csv"),
-        df_confusion_matrix_path=os.path.join(PART_1_OUTPUT_FOLDER, "q5_confusion.csv"),
+        df_performance_path=os.path.join(PART_1_OUTPUT_FOLDER, "q5_2"),
+        df_confusion_matrix_path=os.path.join(PART_1_OUTPUT_FOLDER, "q5_confusion"),
         most_difficult_images_path=os.path.join(
             PART_1_OUTPUT_FOLDER, "q5_most_difficult.png"
         ),
