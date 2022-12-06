@@ -1,14 +1,14 @@
 from dataclasses import dataclass
-
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-from jax import vmap
 from typing import List, Tuple
-import dataframe_image as dfi
 
-from src.models.helpers import TrainTestData, make_folds
+import dataframe_image as dfi
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from jax import vmap
+
 from src.models import perceptron
+from src.models.helpers import TrainTestData, make_folds
 from src.models.kernels import BaseKernel
 
 
@@ -176,8 +176,8 @@ def q1(
             ),
         ]
     ).T
-    df.to_csv(df_performance_path+".csv")
-    dfi.export(df, df_performance_path+".png")
+    df.to_csv(df_performance_path + ".csv")
+    dfi.export(df, df_performance_path + ".png")
 
 
 def q2(
@@ -245,8 +245,8 @@ def q2(
         kernel_parameter_name=f"Mean Optimal {kernel_parameter_name}",
         index="Test Error Rate",
     ).T
-    df_test_performance.to_csv(df_performance_path+".csv")
-    dfi.export(df_test_performance, df_performance_path+".png")
+    df_test_performance.to_csv(df_performance_path + ".csv")
+    dfi.export(df_test_performance, df_performance_path + ".png")
 
     test_confusion_matrix = (
         test_confusion_matrix / test_confusion_matrix.sum(axis=2)[..., None]
@@ -266,8 +266,8 @@ def q2(
         columns=labels,
     )
     df.index = labels
-    df.to_csv(df_confusion_matrix_path+".csv")
-    dfi.export(df, df_confusion_matrix_path+".png")
+    df.to_csv(df_confusion_matrix_path + ".csv")
+    dfi.export(df, df_confusion_matrix_path + ".png")
 
     # find hardest to predict images
     # for each model, predict on the entire dataset
@@ -293,6 +293,6 @@ def q2(
     for i in range(len(most_difficult_image_indices)):
         ax[i].imshow(most_difficult_images[i].reshape(16, 16))
         ax[i].title.set_text(f"Label={most_difficult_labels[i]}")
-        ax[i].axis('off')
+        ax[i].axis("off")
     plt.savefig(most_difficult_images_path)
     plt.close(fig)

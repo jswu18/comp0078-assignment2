@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import numpy as np
 import jax.numpy as jnp
+import numpy as np
 from jax import jit
 
 
@@ -41,9 +41,7 @@ def _compute_update(w: np.ndarray, y: np.ndarray, gram: np.ndarray) -> np.ndarra
     return jnp.multiply(y[None, ...], update_mask)
 
 
-def train(
-    gram: np.ndarray, y: np.ndarray, number_of_epochs: int
-) -> np.ndarray:
+def train(gram: np.ndarray, y: np.ndarray, number_of_epochs: int) -> np.ndarray:
     """
     Vectorised perceptron training by training multiple trials, parameters, etc. in parallel
     The perceptron is trained one data point at a time, the new weights depend on the weights of the previous

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-import numpy as np
+from typing import Any, Dict, Tuple
+
 import jax.numpy as jnp
-from jax import vmap, jit, tree_util
-from typing import Dict, Any, Tuple
+import numpy as np
+from jax import jit, tree_util, vmap
 
 
 class BaseKernel(ABC):
