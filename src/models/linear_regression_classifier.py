@@ -10,7 +10,7 @@ class LinearRegressionClassifier(Model):
         super().__init__()
 
     def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> None:
-        self.w = np.linalg.pinv(x.T) @ y
+        self.w = np.linalg.pinv(x) @ y
 
     def predict(self, x: jnp.ndarray) -> jnp.ndarray:
-        return jnp.sign(x.T @ self.w)
+        return jnp.sign(x @ self.w)

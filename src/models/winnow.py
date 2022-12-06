@@ -23,11 +23,10 @@ class Winnow(Model):
         """
         prediction for a single data point (across all experiments)
         :param w: weight matrix
-                  (N_1,...,N_M, number_features)
+                  (number_of_dimensions)
         :param x: input data point (across all experiments)
-                  (N_1,...,N_M, number_features)
+                  (number_points, number_of_dimensions)
         :return: winnow prediction
-                 (N_1,...,N_M)
         """
         return (
             (np.mean(np.multiply(w, x), axis=-1) - 1)
@@ -41,12 +40,11 @@ class Winnow(Model):
         """
         compute weight update for a single data point (across all experiments)
         :param w: weight matrix
-                  (N_1,...,N_M, number_features)
+                  (number_of_dimensions)
         :param x: input data point (across all experiments)
-                     (N_1,...,N_M, number_features)
-        :param y: matrix of a responses (across all experiments)
-                  (N_1,...,N_M)
-        :return: new weight matrix (N_1,...,N_M, number_features)
+                     (number_of_dimensions)
+        :param y: response
+        :return: new weight update (number_of_dimensions)
         """
         prediction = Winnow._predict(w, x)  # (N_1,...,N_M)
         return np.multiply(
@@ -63,9 +61,9 @@ class Winnow(Model):
         that we want to train for. N_i will be the size of the ith dimension, and i = 1, 2, ..., M
 
         :param x: design matrix
-                  (number_features, number_training_points)
+                  (number_training_points, number_of_dimensions)
         :param y: matrix of responses, the response for all parameter trials will be the same
-                  (N_1,...,N_M, number_training_points)
+                  (number_training_points)
         :param **kwargs: number_of_epochs: number of epochs to train model
         :return:
         """
@@ -74,22 +72,18 @@ class Winnow(Model):
         else:
             number_of_epochs = 1
 
-        self.w = np.ones((x.shape[:-1]))
+        self.w = np.ones(x.shape[1])
         y = self._preprocess(y)
         for _ in range(number_of_epochs):
-            for i in range(1, x.shape[-1]):
-                self.w = self._compute_update(self.w, y=y[..., i], x=x[..., i])
+            for i in range(1, x.shape[0]):
+                self.w = self._compute_update(self.w, y=y[i], x=x[i, :])
 
     def predict(self, x: np.ndarray) -> np.ndarray:
         """
         winnow prediction
         :param x: design matrix
-                  (N_1,...,N_M, number_features, number_of_test_points)
+                  (number_points, number_of_dimensions)
         :return: predictions for test points
-                 (N_1,...,N_M, number_of_test_points)
+                 (number_points)
         """
-        return self._postprocess(
-            np.stack(
-                [self._predict(self.w, x[..., i]) for i in range(x.shape[-1])], axis=-1
-            )
-        )
+        return self._postprocess(self._predict(self.w, x))
