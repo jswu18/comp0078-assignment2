@@ -6,7 +6,10 @@ import numpy as np
 import pandas as pd
 
 from src.models.helpers import knn_adjacency_matrix, ssl_data_sample
-from src.models.laplacian_interpolation import LaplacianInterpolation, LaplacianKernelInterpolation
+from src.models.laplacian_interpolation import (
+    LaplacianInterpolation,
+    LaplacianKernelInterpolation,
+)
 
 outpath = os.path.join("outputs", "part2")
 DATAPATH50 = os.path.join("data", "dtrain13_50.dat")
@@ -84,7 +87,9 @@ def q2():
         data = np.genfromtxt(path)
         data[:, 0] -= 2
         datasets.append(data)
-    means, stds = experimental_report(LaplacianInterpolation(), datasets, number_iterations=20)
+    means, stds = experimental_report(
+        LaplacianInterpolation(), datasets, number_iterations=20
+    )
     write_report_to_csv(means, stds, outpath=REPORT_LAPLACIAN_OUTPATH)
 
     means, stds = experimental_report(

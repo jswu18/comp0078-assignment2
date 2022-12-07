@@ -1,9 +1,10 @@
+from typing import Callable, Dict
+
 import matplotlib.pyplot as plt
 import numpy as np
-
 from tqdm import tqdm
+
 from src.models.single_class.model import Model
-from typing import Dict, Callable
 
 
 def generate_data(m: int, n: int):
@@ -58,21 +59,20 @@ def a(
     plt.title(type(model).__name__)
     plt.xlabel("n")
     plt.ylabel("m")
-    plt.savefig(figure_save_path+"_sample_complexity.png")
+    plt.savefig(figure_save_path + "_sample_complexity.png")
     plt.close()
 
     fig, ax = plt.subplots(1, len(candidate_complexity_functions))
-    fig.set_size_inches(len(candidate_complexity_functions)*5, 6)
+    fig.set_size_inches(len(candidate_complexity_functions) * 5, 6)
     for i, function_name in enumerate(candidate_complexity_functions.keys()):
         f = candidate_complexity_functions[function_name]
         ax[i].plot(
             dimensions,
             np.divide(
-                f(dimensions),
-                np.mean(train_points_for_generalisation_error, axis=1)
+                f(dimensions), np.mean(train_points_for_generalisation_error, axis=1)
             ),
         )
         ax[i].title.set_text(f"{function_name} Comparison")
     plt.suptitle(f"{type(model).__name__}: Complexity Function Comparison")
-    plt.savefig(figure_save_path+"_complexity_function_comparison.png")
+    plt.savefig(figure_save_path + "_complexity_function_comparison.png")
     plt.close()

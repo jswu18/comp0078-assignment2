@@ -1,5 +1,5 @@
-from sklearn.neighbors import KDTree
 import numpy as np
+from sklearn.neighbors import KDTree
 
 from src.models.single_class.model import Model
 

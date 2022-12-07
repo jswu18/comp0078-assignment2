@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from jax import vmap
 
-from src.models.multi_class import perceptron
 from src.models.helpers import TrainTestData, make_folds
 from src.models.kernels import BaseKernel
+from src.models.multi_class import perceptron
 
 
 @dataclass

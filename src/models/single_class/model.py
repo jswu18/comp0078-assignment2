@@ -14,4 +14,3 @@ class Model(ABC):
     @abstractmethod
     def fit_predict(self, x_train, y_train, x_test, **kwargs):
         pass
-

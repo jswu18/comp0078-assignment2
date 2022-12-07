@@ -8,7 +8,9 @@ from src.models.single_class.model import Model
 
 class SingleClassPerceptron(Model):
     def __init__(
-        self, kernel: BaseKernel, kernel_kwargs: Dict[str, Any],
+        self,
+        kernel: BaseKernel,
+        kernel_kwargs: Dict[str, Any],
     ):
         self.kernel = kernel
         self.kernel_kwargs = kernel_kwargs
@@ -40,7 +42,9 @@ class SingleClassPerceptron(Model):
 
         return (y != prediction) * y
 
-    def fit_predict(self, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray, **kwargs) -> np.ndarray:
+    def fit_predict(
+        self, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray, **kwargs
+    ) -> np.ndarray:
         """
         All input matrices will share the first M dimensions representing the different independent experiments
         that we want to train for. N_i will be the size of the ith dimension, and i = 1, 2, ..., M
@@ -60,6 +64,8 @@ class SingleClassPerceptron(Model):
         w = np.zeros(y_train.shape)
         for _ in range(number_of_epochs):
             for i in range(1, len(self.w)):
-                w[i] += self._compute_update(w=self.w, y=y_train[i], gram=gram_train[:, i])
+                w[i] += self._compute_update(
+                    w=self.w, y=y_train[i], gram=gram_train[:, i]
+                )
         gram_test = self.kernel(x_train, x_test, **self.kernel_kwargs)
         return self._predict(w, gram_test)
