@@ -1,13 +1,9 @@
 import numpy as np
 
-from src.models.model import Model
+from src.models.single_class.model import Model
 
 
 class Winnow(Model):
-    def __init__(self, w=None):
-        self.w: np.ndarray = w
-        super().__init__()
-
     @staticmethod
     def _preprocess(y):
         y[y == -1] = 0
@@ -51,7 +47,7 @@ class Winnow(Model):
             w, 2 ** np.multiply((y - prediction)[..., None], x).astype(float)
         )
 
-    def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> None:
+    def fit_predict(self, x_train, y_train, x_test, **kwargs):
         """
         Vectorised winnow training by training multiple trials, etc. in parallel
         The winnow is trained one data point at a time, the new weights depend on the weights of the previous
@@ -72,18 +68,9 @@ class Winnow(Model):
         else:
             number_of_epochs = 1
 
-        self.w = np.ones(x.shape[1])
-        y = self._preprocess(y)
+        w = np.ones(x_train.shape[1])
+        y_train = self._preprocess(y_train)
         for _ in range(number_of_epochs):
-            for i in range(1, x.shape[0]):
-                self.w = self._compute_update(self.w, y=y[i], x=x[i, :])
-
-    def predict(self, x: np.ndarray) -> np.ndarray:
-        """
-        winnow prediction
-        :param x: design matrix
-                  (number_points, number_of_dimensions)
-        :return: predictions for test points
-                 (number_points)
-        """
-        return self._postprocess(self._predict(self.w, x))
+            for i in range(1, x_train.shape[0]):
+                w = self._compute_update(w, y=y_train[i], x=x_train[i, :])
+        return self._postprocess(self._predict(w, x_test))

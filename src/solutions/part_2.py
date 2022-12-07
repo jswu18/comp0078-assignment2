@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from src.models.helpers import KNN_adjacency_matrix, ssl_data_sample
-from src.models.SSL import LaplacianInterpolation, LaplacianKernelInterpolation
+from src.models.helpers import knn_adjacency_matrix, ssl_data_sample
+from src.models.laplacian_interpolation import LaplacianInterpolation, LaplacianKernelInterpolation
 
 outpath = os.path.join("outputs", "part2")
 DATAPATH50 = os.path.join("data", "dtrain13_50.dat")
@@ -23,26 +23,26 @@ GRAPH_LABEL_DIAGRAM_PATH = os.path.join(outpath, "graph_label_diagram.png")
 def experimental_report(
     model,
     datasets,
-    n_iters,
+    number_iterations,
 ):
     sample_range = [1, 2, 4, 8, 16]
-    accuracy = np.zeros((4, 5, n_iters))
+    accuracy = np.zeros((4, 5, number_iterations))
 
-    for iter in range(n_iters):
+    for iteration in range(number_iterations):
         for i, dataset in enumerate(datasets):
             y = dataset[:, 0]
-            W = KNN_adjacency_matrix(dataset[:, 1:], k=3)
+            w = knn_adjacency_matrix(dataset[:, 1:], k=3)
             for j, sample_size in enumerate(sample_range):
                 sample = ssl_data_sample(y, sample_size)
                 y_train, y_test = (
                     y[sample[: 2 * sample_size]],
                     y[sample[2 * sample_size :]],
                 )
-                accuracy[i, j, iter] = (
-                    model.predict(W[sample, :][:, sample], y_train) == y_test
-                ).mean()
+                accuracy[i, j, iteration] = np.mean(
+                    model.predict(w[sample, :][:, sample], y_train) == y_test
+                )
                 if i == 0:
-                    graph_edge_label_diagram(W, y, GRAPH_LABEL_DIAGRAM_PATH)
+                    graph_edge_label_diagram(w, y, GRAPH_LABEL_DIAGRAM_PATH)
     return accuracy.mean(-1), accuracy.std(-1)
 
 
@@ -68,14 +68,13 @@ def edge_colour(y1, y2):
         return 3.0
 
 
-def graph_edge_label_diagram(W, y, outpath):
+def graph_edge_label_diagram(w, y, outpath):
     edge_colours = np.zeros((y.shape[0], y.shape[0]))
     for i, y1 in enumerate(y):
         for j, y2 in enumerate(y):
             edge_colours[i, j] = edge_colour(y1, y2)
 
-    W2 = W * edge_colours
-    fig = plt.imshow(W2)
+    plt.imshow(w * edge_colours)
     plt.savefig(outpath)
 
 
@@ -85,11 +84,11 @@ def q2():
         data = np.genfromtxt(path)
         data[:, 0] -= 2
         datasets.append(data)
-    means, stds = experimental_report(LaplacianInterpolation(), datasets, n_iters=20)
+    means, stds = experimental_report(LaplacianInterpolation(), datasets, number_iterations=20)
     write_report_to_csv(means, stds, outpath=REPORT_LAPLACIAN_OUTPATH)
 
     means, stds = experimental_report(
-        LaplacianKernelInterpolation(), datasets, n_iters=20
+        LaplacianKernelInterpolation(), datasets, number_iterations=20
     )
     write_report_to_csv(means, stds, outpath=REPORT_LAPLACIAN_KERNEL_OUTPATH)
 

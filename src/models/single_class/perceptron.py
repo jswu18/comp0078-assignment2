@@ -3,17 +3,15 @@ from typing import Any, Dict
 import numpy as np
 
 from src.models.kernels import BaseKernel
-from src.models.model import Model
+from src.models.single_class.model import Model
 
 
 class SingleClassPerceptron(Model):
     def __init__(
-        self, kernel: BaseKernel, kernel_kwargs: Dict[str, Any], w=None, x=None
+        self, kernel: BaseKernel, kernel_kwargs: Dict[str, Any],
     ):
         self.kernel = kernel
         self.kernel_kwargs = kernel_kwargs
-        self.x: np.ndarray = x
-        self.w: np.ndarray = w
         super().__init__()
 
     @staticmethod
@@ -42,7 +40,7 @@ class SingleClassPerceptron(Model):
 
         return (y != prediction) * y
 
-    def fit(self, x: np.ndarray, y: np.ndarray, **kwargs) -> None:
+    def fit_predict(self, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray, **kwargs) -> np.ndarray:
         """
         All input matrices will share the first M dimensions representing the different independent experiments
         that we want to train for. N_i will be the size of the ith dimension, and i = 1, 2, ..., M
@@ -58,22 +56,10 @@ class SingleClassPerceptron(Model):
         else:
             number_of_epochs = 1
 
-        self.x = x
-        gram = self.kernel(x, **self.kernel_kwargs)
-
-        self.w = np.zeros(y.shape)
-
+        gram_train = self.kernel(x_train, **self.kernel_kwargs)
+        w = np.zeros(y_train.shape)
         for _ in range(number_of_epochs):
             for i in range(1, len(self.w)):
-                self.w[i] += self._compute_update(w=self.w, y=y[i], gram=gram[:, i])
-
-    def predict(self, x: np.ndarray) -> np.ndarray:
-        """
-        perceptron prediction
-        :param x: design matrix
-                  (number_of_points, number_of_dimensions)
-        :return: predictions for x
-                 (number_of_points, number_classes)
-        """
-        gram = self.kernel(self.x, x, **self.kernel_kwargs)
-        return self._predict(self.w, gram)
+                w[i] += self._compute_update(w=self.w, y=y_train[i], gram=gram_train[:, i])
+        gram_test = self.kernel(x_train, x_test, **self.kernel_kwargs)
+        return self._predict(w, gram_test)

@@ -79,12 +79,12 @@ def ssl_data_sample(y, sample_size):
     return idxs
 
 
-def KNN_adjacency_matrix(X, k):
-    tree = KDTree(X)
-    n = X.shape[0]
-    graph = tree.query(X, k)[1][:, 1:]
-    W = np.zeros((n, n))
+def knn_adjacency_matrix(x, k):
+    tree = KDTree(x)
+    n = x.shape[0]
+    graph = tree.query(x, k)[1][:, 1:]
+    w = np.zeros((n, n))
     for i in range(n):
-        W[i, graph[i, :]] = 1
-        W[graph[i, :], i] = 1
-    return W
+        w[i, graph[i, :]] = 1
+        w[graph[i, :], i] = 1
+    return w
