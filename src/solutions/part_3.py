@@ -1,3 +1,4 @@
+import os
 from typing import Callable, Dict
 
 import matplotlib.pyplot as plt
@@ -19,14 +20,12 @@ def generate_data(m: int, n: int):
     return x, y
 
 
-def a(
+def run_experiment(
     model: Model,
     dimensions: np.ndarray,
     number_of_trials: int,
     m_test: int,
-    figure_save_path: str,
-    candidate_complexity_functions: Dict[str, Callable],
-    generalisation_error: float = 0.1,
+    generalisation_error: float,
 ):
     number_of_dimensions = len(dimensions)
 
@@ -39,24 +38,65 @@ def a(
     )
 
     for i, n in tqdm(enumerate(dimensions)):
-        for j in tqdm(range(number_of_trials)):
+        for j in range(number_of_trials):
             x_test, y_test = generate_data(m_test, n)
             error_rate = 1
             m = 0
+            x_train, y_train = generate_data(1, n)
             while error_rate > generalisation_error:
                 m += 1
-                x_train, y_train = generate_data(m, n)
                 y_predicted = model.fit_predict(x_train, y_train, x_test)
                 assert y_predicted.shape == y_test.shape
                 error_rate = np.mean(y_predicted != y_test)
+
+                x_train_new, y_train_new = generate_data(1, n)
+                x_train = np.concatenate((x_train, x_train_new))
+                y_train = np.concatenate((y_train, y_train_new))
+
             train_points_for_generalisation_error[i, j] = m
+    return train_points_for_generalisation_error
+
+
+def a(
+    model: Model,
+    dimensions: np.ndarray,
+    number_of_trials: int,
+    m_test: int,
+    figure_save_path: str,
+    candidate_complexity_functions: Dict[str, Callable],
+    generalisation_error: float = 0.1,
+    load_previous_results: bool = True,
+):
+    if load_previous_results and os.path.isfile(figure_save_path + ".npz"):
+        loaded_arrays = np.load(figure_save_path + ".npz")
+        train_points_for_generalisation_error = loaded_arrays[
+            "train_points_for_generalisation_error"
+        ]
+        dimensions = loaded_arrays["dimensions"]
+        generalisation_error = loaded_arrays["generalisation_error"].item()
+    else:
+        train_points_for_generalisation_error = run_experiment(
+            model,
+            dimensions,
+            number_of_trials,
+            m_test,
+            generalisation_error,
+        )
+        with open(figure_save_path + ".npz", "wb") as f:
+            np.savez(
+                f,
+                train_points_for_generalisation_error=train_points_for_generalisation_error,
+                dimensions=dimensions,
+                generalisation_error=generalisation_error,
+            )
+
     plt.errorbar(
         dimensions,
         np.mean(train_points_for_generalisation_error, axis=1),
         yerr=np.std(train_points_for_generalisation_error, axis=1),
         capsize=2,
     )
-    plt.title(type(model).__name__)
+    plt.title(f"{type(model).__name__} ({generalisation_error=})")
     plt.xlabel("n")
     plt.ylabel("m")
     plt.savefig(figure_save_path + "_sample_complexity.png")
@@ -73,6 +113,8 @@ def a(
             ),
         )
         ax[i].title.set_text(f"{function_name} Comparison")
-    plt.suptitle(f"{type(model).__name__}: Complexity Function Comparison")
+    plt.suptitle(
+        f"{type(model).__name__}: Complexity Function Comparison ({generalisation_error=})"
+    )
     plt.savefig(figure_save_path + "_complexity_function_comparison.png")
     plt.close()

@@ -6,7 +6,7 @@ from src.models.kernels import BaseKernel
 from src.models.single_class.model import Model
 
 
-class SingleClassPerceptron(Model):
+class Perceptron(Model):
     def __init__(
         self,
         kernel: BaseKernel,
@@ -38,7 +38,7 @@ class SingleClassPerceptron(Model):
         :param y: matrix of a single response
         :return: weight update for the weights pertaining to the single input
         """
-        prediction = SingleClassPerceptron._predict(w, gram)
+        prediction = Perceptron._predict(w, gram)
 
         return (y != prediction) * y
 
@@ -63,9 +63,7 @@ class SingleClassPerceptron(Model):
         gram_train = self.kernel(x_train, **self.kernel_kwargs)
         w = np.zeros(y_train.shape)
         for _ in range(number_of_epochs):
-            for i in range(1, len(self.w)):
-                w[i] += self._compute_update(
-                    w=self.w, y=y_train[i], gram=gram_train[:, i]
-                )
+            for i in range(1, len(w)):
+                w[i] += self._compute_update(w=w, y=y_train[i], gram=gram_train[:, i])
         gram_test = self.kernel(x_train, x_test, **self.kernel_kwargs)
         return self._predict(w, gram_test)

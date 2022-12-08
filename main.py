@@ -3,10 +3,14 @@ import os
 import jax
 import numpy as np
 
-from src.constants import (
-    OUTPUTS_FOLDER,
+from src.constants import OUTPUTS_FOLDER
+from src.models.kernels import PolynomialKernel
+from src.models.single_class.linear_regression_classifier import (
+    LinearRegressionClassifier,
 )
 from src.models.single_class.one_nn import OneNN
+from src.models.single_class.perceptron import Perceptron
+from src.models.single_class.winnow import Winnow
 from src.solutions import part_3
 
 if __name__ == "__main__":
@@ -94,22 +98,15 @@ if __name__ == "__main__":
     PART_3_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "part3")
     if not os.path.exists(PART_3_OUTPUT_FOLDER):
         os.makedirs(PART_3_OUTPUT_FOLDER)
+    LOAD_PREVIOUS_RESULTS = False
 
     candidate_complexity_functions = {
         "linear": lambda x: x,
         "quadratic": lambda x: x**2,
         "cubic": lambda x: x**3,
-        "exponential": lambda x: 2**x,
+        "exponential": lambda x: np.exp(x),
         "logarithm": lambda x: np.log(x),
     }
-    # part_3.a(
-    #     model=OneNN(),
-    #     dimensions=np.arange(1, 21),
-    #     number_of_trials=100,
-    #     m_test=200,
-    #     candidate_complexity_functions=candidate_complexity_functions,
-    #     figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_one_nn"),
-    # )
     part_3.a(
         model=OneNN(),
         dimensions=np.arange(1, 21),
@@ -117,33 +114,32 @@ if __name__ == "__main__":
         m_test=200,
         candidate_complexity_functions=candidate_complexity_functions,
         figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_one_nn"),
+        load_previous_results=LOAD_PREVIOUS_RESULTS,
     )
-    # part_3.a(
-    #     model=Winnow(),
-    #     dimensions=np.arange(1, 21),
-    #     number_train_points=np.arange(1, 101),
-    #     number_of_trials=10,
-    #     m_test=20,
-    #     candidate_complexity_functions=candidate_complexity_functions,
-    #     figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_winnow"),
-    # )
-    # part_3.a(
-    #     model=LinearRegressionClassifier(),
-    #     dimensions=np.arange(1, 101),
-    #     number_train_points=np.arange(1, 101),
-    #     number_of_trials=10,
-    #     m_test=20,
-    #     candidate_complexity_functions=candidate_complexity_functions,
-    #     figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_lin_reg"),
-    # )
-    # part_3.a(
-    #     model=SingleClassPerceptron(
-    #         kernel=PolynomialKernel(), kernel_kwargs={"degree": 1}
-    #     ),
-    #     dimensions=np.arange(1, 101),
-    #     number_train_points=np.arange(1, 501),
-    #     number_of_trials=100,
-    #     m_test=100,
-    #     candidate_complexity_functions=candidate_complexity_functions,
-    #     figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_perceptron"),
-    # )
+    part_3.a(
+        model=Winnow(),
+        dimensions=np.arange(1, 101),
+        number_of_trials=500,
+        m_test=200,
+        candidate_complexity_functions=candidate_complexity_functions,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_winnow"),
+        load_previous_results=LOAD_PREVIOUS_RESULTS,
+    )
+    part_3.a(
+        model=LinearRegressionClassifier(),
+        dimensions=np.arange(1, 101),
+        number_of_trials=500,
+        m_test=200,
+        candidate_complexity_functions=candidate_complexity_functions,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_lin_reg"),
+        load_previous_results=LOAD_PREVIOUS_RESULTS,
+    )
+    part_3.a(
+        model=Perceptron(kernel=PolynomialKernel(), kernel_kwargs={"degree": 1}),
+        dimensions=np.arange(1, 51),
+        number_of_trials=100,
+        m_test=200,
+        candidate_complexity_functions=candidate_complexity_functions,
+        figure_save_path=os.path.join(PART_3_OUTPUT_FOLDER, "q1a_perceptron"),
+        load_previous_results=LOAD_PREVIOUS_RESULTS,
+    )
