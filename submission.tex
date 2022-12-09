@@ -129,7 +129,7 @@ to eachother to predict labels.
     \item[b.]
     \item[c.]
     \item[D.]\\
-    We note that since for any $X_{t}$, $y_{t} = X_{1,t}$, we have the following
+    We note that since for any $X_{t}$ , $y_{t} = X_{1,t}$ , we have the following
      expression representing the linear separability of our dataset:\\
     \[(v \cdot x_{t})y_{t} \ge 1\]\\
     Where $v = (1,0, \dots, 0)^{T}$. Note that $\|v\| =1$.\\
@@ -144,6 +144,61 @@ to eachother to predict labels.
 
     \[Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}\]\\
 
-     
+     \item[E.]\\
+     From our experimental observations we may expect the sample complexity of 1-NN
+     to be lower bounded by some exponential function. We formalise this in the
+     following proposition:\\
+
+    \textbf{Proposition:}\\
+
+    Following the data-generating distribution described above, we have that our sample complexity given by:\\
+
+    $m(n) = \Omega (n)$ \\
+    \textbf{Proof:}\\
+
+    Suppose we sample a training set $S = \{(x_{1},y_{1}), \dots, (x_{n},y_{n})\} $ uniformly from the set $\{-1,1\}^{n}$, with associated labels
+    defined by the rule $y | x = x_{1}$, and use this training set for inference on an
+     arbitrary test point $(x,x_{1})$, sampled uniformly from the same set.
+    \\
+    We note the following observation:\\
+
+    \textbf{Obs:}\\
+    if $x \in S$, then $\mathcal{A}_{S}(x)) = y$, where y is the true label for x. \\
+
+    To justify this, observe that our dataset represents a realiseable learning problem,
+    and as such, if $(x,y), (x \prime,y \prime)$ are datapoints sampled from our distribution,
+    $x = x \prime \implies y = y \prime $. Trivially, x is the 1-nearest neighbour to itself,
+    so the algorithm makes a correct prediction for any datapoint present in our training set.\\
+
+    Hence, $\mathcal{A}_{S}$ makes an error on x $\implies x \notin S$.
+    
+    Hence, the set of all training sets that make an error on x is contained in the set of all
+    training sets not containing x. \\
+
+    Hence, for a given x, $P_{S}(\mathcal{A}_{S}(x) \ne y) \le P_{S}(x \notin S)$.\\
+
+    Since S is a collection of points sampled iid from our data generating distribution, \\
+    $P_{S}(x \notin S) = \prod_{i=1}^{m}P(x_{i} \ne x) = \prod_{i}(1 - P(x_{i} = x)) = (1 - 2^{-n})^{m}$\\
+
+    We note that our choice of x was arbitrary, and since we sampled x uniformly, we arrive at the 
+    following generalisation error bound:\\
+
+    $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le (1 - 2^{-n})^{m} $\\
+    Using the identity $1-x \le e^{-x}$ provided frequently in the notes, we simplify this bound to give:
+    \\
+    \\
+
+    $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le exp(-2^{n}m)$
+    \\
+    Suppose we seek m such that our generalisation error is less than some fixed $\epsilon$. \\
+    \\
+    Hence we require $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le exp(-2^{n}m) \le \epsilon$\\
+    \\
+    $\implies -m2^{-n} \le log(\epsilon)$\\
+
+    Hence, $m \ge -log(\epsilon)2^{n} = log(\frac{1}{\epsilon}) 2^{n}$\\
+
+    $\implies m = \Omega(2^{n})$\\
+    $\square$
 \end{itemize}
 \end{document}
