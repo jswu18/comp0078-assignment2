@@ -207,33 +207,24 @@ if __name__ == "__main__":
             "fit": lambda x, y: np.polyfit(x, y, 2),
             "f": lambda x, coeff: np.poly1d(coeff)(x),
         },
-        # "logarithm": {
-        #     "fit": lambda x, y: np.polyfit(np.log(x), y, 1),
-        #     "f": lambda x, coeff: np.poly1d(coeff)(np.log(x)),
-        # },
         "logarithm": {
             "fit": lambda x, y: curve_fit(
-                lambda t, a, b, c: a * np.log(b * t) + c, x, y
+                lambda t, a, b, c: np.abs(a) * np.log(b * t) + c, x, y
             )[0],
-            "f": lambda x, coeff: coeff[0] * np.log(coeff[1] * x) + coeff[2],
+            "f": lambda x, coeff: np.abs(coeff[0]) * np.log(coeff[1] * x) + coeff[2],
         },
         "exponential": {
             "fit": lambda x, y: curve_fit(
-                lambda t, a, b, c: a * np.exp(b * t) + c, x, y
+                lambda t, a, b, c: np.abs(a) * np.exp(b * t) + c, x, y
             )[0],
-            "f": lambda x, coeff: coeff[0] * np.exp(coeff[1] * x) + coeff[2],
+            "f": lambda x, coeff: np.abs(coeff[0]) * np.exp(coeff[1] * x) + coeff[2],
         },
-        "2^n": {
-            "fit": lambda x, y: curve_fit(
-                lambda t, a, b, c: a * (2 ** (b * t)) + c, x, y
-            )[0],
-            "f": lambda x, coeff: coeff[0] * (2 ** (coeff[1] * x)) + coeff[2],
-        },
-        # "linear": lambda x: x,
-        # "quadratic": lambda x: x**2,
-        # "cubic": lambda x: x**3,
-        # "exponential": lambda x: x**5,
-        # "logarithm": lambda x: np.log(x),
+        # "2^n": {
+        #     "fit": lambda x, y: curve_fit(
+        #         lambda t, a, b, c: a * (2 ** (b * t)) + c, x, y
+        #     )[0],
+        #     "f": lambda x, coeff: coeff[0] * (2 ** (coeff[1] * x)) + coeff[2],
+        # },
     }
     part_3.a(
         model=OneNN(),
