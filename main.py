@@ -185,11 +185,11 @@ if __name__ == "__main__":
         use_default_update_method=False,
     )
 
-    # # Question 2
-    # PART_2_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "part2")
-    # if not os.path.exists(PART_2_OUTPUT_FOLDER):
-    #     os.makedirs(PART_2_OUTPUT_FOLDER)
-    # q2()
+    # Question 2
+    PART_2_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "part2")
+    if not os.path.exists(PART_2_OUTPUT_FOLDER):
+        os.makedirs(PART_2_OUTPUT_FOLDER)
+    q2()
 
     # Question 3
     PART_3_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "part3")
