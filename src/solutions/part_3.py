@@ -63,7 +63,7 @@ def a(
     number_of_trials: int,
     m_test: int,
     figure_save_path: str,
-    candidate_complexity_functions: Dict[str, Callable],
+    candidate_complexity_functions: Dict[str, Dict[str, Callable]],
     generalisation_error: float = 0.1,
     load_previous_results: bool = True,
 ):
@@ -105,14 +105,28 @@ def a(
     fig, ax = plt.subplots(1, len(candidate_complexity_functions))
     fig.set_size_inches(len(candidate_complexity_functions) * 5, 6)
     for i, function_name in enumerate(candidate_complexity_functions.keys()):
-        f = candidate_complexity_functions[function_name]
-        ax[i].plot(
+        fit_coefficients = candidate_complexity_functions[function_name]["fit"](
+            dimensions, np.mean(train_points_for_generalisation_error, axis=1)
+        )
+        fit_function = lambda x: candidate_complexity_functions[function_name]["f"](
+            x, fit_coefficients
+        )
+        ax[i].errorbar(
             dimensions,
-            np.divide(
-                f(dimensions), np.mean(train_points_for_generalisation_error, axis=1)
-            ),
+            np.mean(train_points_for_generalisation_error, axis=1),
+            yerr=np.std(train_points_for_generalisation_error, axis=1),
+            capsize=2,
+            color=(0.8, 0.8, 0.8),
+            zorder=-1,
+            label="Sample Complexity",
+        )
+        ax[i].plot(
+            dimensions, fit_function(dimensions), zorder=1, label=f"{function_name} Fit"
         )
         ax[i].title.set_text(f"{function_name} Comparison")
+        ax[i].legend()
+        ax[i].set_xlabel("n")
+        ax[i].set_ylabel("m")
     plt.suptitle(
         f"{type(model).__name__}: Complexity Function Comparison ({generalisation_error=})"
     )

@@ -12,5 +12,7 @@ class Model(ABC):
     """
 
     @abstractmethod
-    def fit_predict(self, x_train, y_train, x_test, **kwargs):
+    def fit_predict(
+        self, x_train: np.ndarray, y_train: np.ndarray, x_test: np.ndarray, **kwargs
+    ) -> np.ndarray:
         pass
