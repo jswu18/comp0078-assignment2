@@ -14,7 +14,6 @@ def predict(w: np.ndarray, gram: np.ndarray) -> jnp.ndarray:
                  (N_1,...,N_M, number_training_points, number_test_points)
     :return: a prediction for the single input (N_1,...,N_M, number_classes)
     """
-    # return jnp.sum(jnp.multiply(w, gram[..., None]), axis=-2)
     return gram.T @ w
 
 

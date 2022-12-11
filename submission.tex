@@ -10,6 +10,10 @@
 \usepackage{graphicx}
 \usepackage{csvsimple}
 \usepackage{luacode}
+\documentclass{article}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 \setlength{\droptitle}{-6em}
 
 % Enter the specific assignment number and topic of that assignment below, and replace "Your Name" with your actual name.
@@ -25,31 +29,176 @@
 \subsubsection{Experimental Results}
 
 \begin{itemize}
-    \item[1.] Basic Results:
+    \item[1.] To generalise the kernel perceptron to $K$ classes:
+    \begin{algorithm}
+    \caption{An training algorithm for multi-class kernel perceptron}\label{alg:cap}
+    \begin{algorithmic}
+    \For{$k\in\{1, 2, ..., K\}}$ \Comment Initialise weights for first training example
 
-    \includegraphics{outputs/part1/q1.png}
+    \EndFor
 
+    \For{$i\in\{1, 2, ..., M\}$}: \Comment Number of Epochs
+        \For{$j\in\{2, ..., N\}}$ \Comment Number of training points
+            \For{$k\in\{1, 2, ..., K\}}$ \Comment Number of classes
+                \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i, j}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
+                \If{$sign(\hat{y}_k^{i, j}) \neq sign(y_k^{i, j})$} \Comment Compare predicted $\hat{y}_k^{i, j}$ and actual $y_k^{i, j})$
+                    \State $w^{i, j}_{k} \gets y_k^{i, j}$
+                \Else
+                    \State $w^{i, j}_{k} \gets 0$
+                \EndIf
+            \EndFor
+        \EndFor
+    \EndFor
+    \end{algorithmic}
+    \end{algorithm}
+
+    The number of epochs was determined by training on the mini train data set until the performance of the mini test set no longer changed.
+    This was considered a reasonable number of epochs to use to train the actual data set.
+
+    For prediction, the $k$ with the maximum value of $\hat{y}_k$ (the argmax of $\hat{y}$) is considered the class prediction by the model.
+    \newpage
+
+    Basic Results:
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q1.png}
+    \caption{20 Runs with a Polynomial Kernel}
+    \label{fig:1}
+    \end{figure}
 
     \item[2.] Cross Validation Results:
 
-    \includegraphics{outputs/part1/q2.png}
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q2.png}
+    \caption{5-fold Cross-Validation for 20 Runs with a Polynomial Kernel}
+    \label{fig:2}
+    \end{figure}
+\newpage
 
     \item[3.] Confusion Matrix:
 
-    \includegraphics{outputs/part1/q3_confusion.png}
-\newpage
-    \item[4.] Hardest to predict images:
+    \begin{figure}[h]
+    \centering
+    \begin{minipage}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{outputs/part1/q3_confusion-imshow_mean.png}
+      \caption{Polynomial Kernel Mean}
+      \label{fig:3}
+    \end{minipage}%
+    \begin{minipage}{.5\textwidth}
+      \centering
+      \includegraphics[width=.8\linewidth]{outputs/part1/q3_confusion-imshow_stdev.png}
+      \caption{Polynomial Kernel St. Dev.}
+      \label{fig:4}
+    \end{minipage}
+    \end{figure}
 
-    \includegraphics{outputs/part1/q4.png}
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q3_confusion.png}
+    \caption{Polynomial Kernel Confusion Matrix Error Rate Table}
+    \label{fig:5}
+    \end{figure}
+
+
+    \item[4.] The images with the most errors made by the 20 models trained with cross-validation were considered the hardest to predict and visualised.
+    It is not surprising that these are to predict. 
+    We can see that in all five cases in Figure~\ref{fig:6}, the images do not look like their labels, in fact, they mostly look vertical or horizontal bars.
+    Thus it would be unreasonable to expect that the model would be able to predict them correctly.
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.7]{outputs/part1/q4.png}
+    \caption{Images with the Most Errors from the Trained Models}
+    \label{fig:6}
+    \end{figure}
+
     \newpage
-    \item[5.] Basic Results:
 
-    \includegraphics{outputs/part1/q5_1.png}
+    \item[5.] To select a good range of values for kernel width sigma for the Gaussian kernel, the mini training and test set was used to quickly gauge the test error for different hyper-parameters.
+    The hyper-parameter values above and below the best performing hyper-parameter (with respect to test set error) was chosen as the hyper-parameter range to define $S$, the set of values for cross-validation for repeating parts 1 and 2 with the Gaussian Kernel.
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q5_1-mini.png}
+    \caption{Performance for mini data set (to narrow down a hyper-parameter range)}
+    \label{fig:7}
+    \end{figure}
+    \newpage
+
+    Basic Results:
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q5_1.png}
+    \caption{20 Runs with a Gaussian Kernel}
+    \label{fig:8}
+    \end{figure}
+
 
     Cross Validation Results:
 
-    \includegraphics{outputs/part1/q5_2.png}
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q5_2.png}
+    \caption{5-fold Cross-Validation for 20 Runs with a Gaussian Kernel}
+    \label{fig:9}
+    \end{figure}
+
+\newpage
+    \item[6.] An alternative method to generalise the kernel perceptron to $k$-classes:
+
+    \begin{algorithm}
+    \caption{Another training algorithm for multi-class kernel perceptron}\label{alg:cap}
+    \begin{algorithmic}
+    \For{$k\in\{1, 2, ..., K\}}$ \Comment Initialise weights for first training example
+        \State $w^{1, 1}_k \gets 0$
+    \EndFor
+
+    \For{$i\in\{1, 2, ..., M\}$}: \Comment Number of Epochs
+        \For{$j\in\{2, ..., N\}}$ \Comment Number of training points
+            \For{$k\in\{1, 2, ..., K\}}$ \Comment Number of classes
+                \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i, j}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
+            \EndFor
+            \State $\hat{c} \gets argmax_k \hat{y}_k^{i, j}$ \Comment Predicted class
+            \State $c \gets argmax_k y_k^{i, j}$ \Comment Actual class
+            \If{$\hat{c} \neq c$} \Comment Compare predicted and actual class
+                \State $w^{i, j}_{c} \gets y_{c}^{i, j}$ \Comment Non-zero weights only for actual and predicted classes
+                \State $w^{i, j}_{\hat{c}} \gets y_{\hat{c}}^{i, j}$
+                \State $w^{i, j}_{k} \gets 0 \forall k\in\{1, 2, ..., K\}, k \neq c, k\neq \hat{c}$
+            \Else \Comment All zero weights if actual and predicted classes match
+                \State $w^{i, j}_{k} \gets 0 \forall k\in\{1, 2, ..., K\}$
+                \EndIf
+        \EndFor
+    \EndFor
+    \end{algorithmic}
+    \end{algorithm}
+\newpage
+
+    Basic Results:
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q6.png}
+    \caption{}
+    \label{fig:10}
+    \end{figure}
+    Cross Validation Results:
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part1/q6_performance.png}
+    \caption{}
+    \label{fig:11}
+    \end{figure}
+
+
+
+
+
 \end{itemize}
+\newpage
 \subsubsection{Discussions}
     Choice of Parameters that weren't cross validated
 
@@ -66,14 +215,22 @@
 
 Experimental report for the laplacian interpolation approach:
 \\
-
-\includegraphics{outputs/part2/laplacian_interpolation_report.png}
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part2/laplacian_interpolation_report.png}
+    \caption{}
+    \label{fig:12}
+    \end{figure}
 
 \\
 
 And for the laplacian kernel method:
-
-\includegraphics{outputs/part2/laplacian_kernel_interpolation_report.png}
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.5]{outputs/part2/laplacian_kernel_interpolation_report.png}
+    \caption{}
+    \label{fig:13}
+    \end{figure}
 
 Some observations to make here are:\\
 
@@ -125,10 +282,86 @@ to eachother to predict labels.
 \section{PART III}
 \subsection{Questions}
 \begin{itemize}
-    \item[a.]
-    \item[b.]
-    \item[c.]
-    \item[D.]\\
+    \item[a.] Sample complexity plots for the four algorithms: perceptron, winnow, least squares, and 1-nearest neighbours.
+
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.6]{outputs/part3/q1a_perceptron_sample_complexity.png}
+    \caption{Perceptron Sample Complexity}
+    \label{fig:14}
+    \end{figure}
+
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.6]{outputs/part3/q1a_winnow_sample_complexity.png}
+    \caption{Winnow Sample Complexity}
+    \label{fig:15}
+    \end{figure}
+\newpage
+`
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.6]{outputs/part3/q1a_lin_reg_sample_complexity.png}
+    \caption{Least Squares Sample Complexity}
+    \label{fig:16}
+    \end{figure}
+
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.6]{outputs/part3/q1a_one_nn_sample_complexity.png}
+    \caption{1-Nearest Neighbours Sample Complexity}
+    \label{fig:17}
+    \end{figure}
+
+
+\newpage
+
+    \item[b.] To estimate sample complexity,
+
+    Tradeoffs and biases of this method of sample complexity estimation include
+\newpage
+    \item[c.] To estimate how $m$ grows as a function of $n$ as $n \rightarrow \infty$ for each of the four algorithms, we first visualise lines of best fit of the sample complexities for different function classes (i.e. polynomial, exponential, logarithm):
+
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.35]{outputs/part3/q1a_perceptron_complexity_function_comparison.png}
+    \caption{Perceptron Sample Complexity vs Function Classes}
+    \label{fig:18}
+    \end{figure}
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.35]{outputs/part3/q1a_winnow_complexity_function_comparison.png}
+    \caption{Winnow Sample Complexity vs Function Classes}
+    \label{fig:19}
+    \end{figure}
+\newpage
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.35]{outputs/part3/q1a_lin_reg_complexity_function_comparison.png}
+    \caption{Least Squares Sample Complexity vs Function Classes}
+    \label{fig:21}
+    \end{figure}
+
+    \begin{figure}[h]
+    \centering
+    \includegraphics[scale=0.35]{outputs/part3/q1a_one_nn_complexity_function_comparison.png}
+    \caption{1-Nearest Neighbours Sample Complexity vs Function Classes}
+    \label{fig:22}
+    \end{figure}
+
+    From these plots we can see
+
+    Comparing the performance of the four algorithms
+
+\newpage
+
+    \item[d.]\\
     We note that since for any $X_{t}$ , $y_{t} = X_{1,t}$ , we have the following
      expression representing the linear separability of our dataset:\\
     \[(v \cdot x_{t})y_{t} \ge 1\]\\
@@ -144,7 +377,9 @@ to eachother to predict labels.
 
     \[Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}\]\\
 
-     \item[E.]\\
+\newpage
+
+     \item[e.]\\
      From our experimental observations we may expect the sample complexity of 1-NN
      to be lower bounded by some exponential function. We formalise this in the
      following proposition:\\

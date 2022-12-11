@@ -5,14 +5,18 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 
-from src.constants import (DEFAULT_SEED, OUTPUTS_FOLDER, PART_1_DATA_SET_PATH,
-                           PART_1_MINI_TEST_SET_PATH,
-                           PART_1_MINI_TRAIN_SET_PATH)
-from src.models.helpers import (TrainTestData, one_hot_encode,
-                                split_train_test_data)
+from src.constants import (
+    DEFAULT_SEED,
+    OUTPUTS_FOLDER,
+    PART_1_DATA_SET_PATH,
+    PART_1_MINI_TEST_SET_PATH,
+    PART_1_MINI_TRAIN_SET_PATH,
+)
+from src.models.helpers import TrainTestData, one_hot_encode, split_train_test_data
 from src.models.kernels import GaussianKernel, PolynomialKernel
-from src.models.single_class.linear_regression_classifier import \
-    LinearRegressionClassifier
+from src.models.single_class.linear_regression_classifier import (
+    LinearRegressionClassifier,
+)
 from src.models.single_class.one_nn import OneNN
 from src.models.single_class.perceptron import Perceptron
 from src.models.single_class.winnow import Winnow
