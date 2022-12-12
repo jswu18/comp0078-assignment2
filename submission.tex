@@ -34,13 +34,13 @@
     \caption{An training algorithm for multi-class kernel perceptron}\label{alg:cap}
     \begin{algorithmic}
     \For{$k\in\{1, 2, ..., K\}}$ \Comment Initialise weights for first training example
-
+        \State $w^{1, 1}_k \gets 0$
     \EndFor
 
     \For{$i\in\{1, 2, ..., M\}$}: \Comment Number of Epochs
-        \For{$j\in\{2, ..., N\}}$ \Comment Number of training points
+        \For{$j\in\{2, ..., N\}}$ \Comment Number of training points (skipping the first point)
             \For{$k\in\{1, 2, ..., K\}}$ \Comment Number of classes
-                \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i, j}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
+                \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i', j'}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
                 \If{$sign(\hat{y}_k^{i, j}) \neq sign(y_k^{i, j})$} \Comment Compare predicted $\hat{y}_k^{i, j}$ and actual $y_k^{i, j})$
                     \State $w^{i, j}_{k} \gets y_k^{i, j}$
                 \Else
@@ -52,10 +52,10 @@
     \end{algorithmic}
     \end{algorithm}
 
-    The number of epochs was determined by training on the mini train data set until the performance of the mini test set no longer changed.
+    The number of epochs was determined by training on the mini training data set until the performance of the mini testing data set no longer changed.
     This was considered a reasonable number of epochs to use to train the actual data set.
 
-    For prediction, the $k$ with the maximum value of $\hat{y}_k$ (the argmax of $\hat{y}$) is considered the class prediction by the model.
+    For prediction, the $k$ with the maximum value of $\hat{y}_k$ (the argmax of $\hat{y}$) is considered the label prediction by the model.
     \newpage
 
     Basic Results:
@@ -103,10 +103,10 @@
     \end{figure}
 
 
-    \item[4.] The images with the most errors made by the 20 models trained with cross-validation were considered the hardest to predict and visualised.
-    It is not surprising that these are to predict. 
-    We can see that in all five cases in Figure~\ref{fig:6}, the images do not look like their labels, in fact, they mostly look vertical or horizontal bars.
-    Thus it would be unreasonable to expect that the model would be able to predict them correctly.
+    \item[4.] The images with the most errors made by the 20 models trained in part 2 were considered the hardest to predict and visualised.
+    It is not surprising that these are hard to predict.
+    We can see that in all five cases, the images do not look like their labels, in fact, they mostly look like vertical or horizontal bars.
+    Thus it would be unreasonable to expect a model to predict them correctly.
 
     \begin{figure}[h]
     \centering
@@ -117,7 +117,7 @@
 
     \newpage
 
-    \item[5.] To select a good range of values for kernel width sigma for the Gaussian kernel, the mini training and test set was used to quickly gauge the test error for different hyper-parameters.
+    \item[5.] To select a good range of values for the kernel width sigma for the Gaussian kernel, the mini training and testing sets was used to quickly gauge the test error for different hyper-parameters.
     The hyper-parameter values above and below the best performing hyper-parameter (with respect to test set error) was chosen as the hyper-parameter range to define $S$, the set of values for cross-validation for repeating parts 1 and 2 with the Gaussian Kernel.
     \begin{figure}[h]
     \centering
@@ -159,15 +159,15 @@
     \For{$i\in\{1, 2, ..., M\}$}: \Comment Number of Epochs
         \For{$j\in\{2, ..., N\}}$ \Comment Number of training points
             \For{$k\in\{1, 2, ..., K\}}$ \Comment Number of classes
-                \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i, j}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
+                \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i', j}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
             \EndFor
-            \State $\hat{c} \gets argmax_k \hat{y}_k^{i, j}$ \Comment Predicted class
-            \State $c \gets argmax_k y_k^{i, j}$ \Comment Actual class
-            \If{$\hat{c} \neq c$} \Comment Compare predicted and actual class
-                \State $w^{i, j}_{c} \gets y_{c}^{i, j}$ \Comment Non-zero weights only for actual and predicted classes
+            \State $\hat{c} \gets argmax_k \hat{y}_k^{i, j}$ \Comment Predicted label
+            \State $c \gets argmax_k y_k^{i, j}$ \Comment Actual label
+            \If{$\hat{c} \neq c$} \Comment Compare predicted and actual label
+                \State $w^{i, j}_{c} \gets y_{c}^{i, j}$ \Comment Non-zero weights only for actual and predicted label
                 \State $w^{i, j}_{\hat{c}} \gets y_{\hat{c}}^{i, j}$
                 \State $w^{i, j}_{k} \gets 0 \forall k\in\{1, 2, ..., K\}, k \neq c, k\neq \hat{c}$
-            \Else \Comment All zero weights if actual and predicted classes match
+            \Else \Comment All zero weights if actual and predicted labels match
                 \State $w^{i, j}_{k} \gets 0 \forall k\in\{1, 2, ..., K\}$
                 \EndIf
         \EndFor
@@ -181,7 +181,7 @@
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part1/q6.png}
-    \caption{}
+    \caption{20 Runs with a Polynomial Kernel (Alternative Training Method)}
     \label{fig:10}
     \end{figure}
     Cross Validation Results:
@@ -189,7 +189,7 @@
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part1/q6_performance.png}
-    \caption{}
+    \caption{5-fold Cross-Validation for 20 Runs with a Polynomial Kernel (Alternative Training Method)}
     \label{fig:11}
     \end{figure}
 
@@ -200,13 +200,15 @@
 \end{itemize}
 \newpage
 \subsubsection{Discussions}
-    Choice of Parameters that weren't cross validated
 
-    Generalisation to k-classifiers
 
-    Kernel Comparison
+For these experiments, the number of folds, number of runs, and train/test split were parameters that were arbitrarily chosen, not chosen through cross-validation. Moreover, the kernel parameters were cross-validated to find optimal values, however the range for which cross validation was performed over (i.e. degree 1 to 7 for the polynomial kernel) was chosen relatively arbitrarily. For Gaussian kernels, this was done in a two step process, where a very wide range for sigma was initially used, although this wide range was still chosen arbitrarily. Increasing the number of folds would provide a better estimate of the out of sample performance (i.e. in the limit where we have N folds, each training on $N-1$ points and testing on the single excluded data point). However, this can be quite computationally heavy and a compromise must be drawn. This a similar situation for the number of runs. By increasing the number of runs, we gain a better understanding of average performance, however this is at a computational cost of performing more runs. The train/test split used for these experiments was 80\% training data and 20\% testing data. This follows general rule of thumb for train/test splits. Given a finite data set size, increasing the training percentage can provide inaccurate out of sample performance with the test set. Conversly, a smaller training percentage can poorly represent the model's performance due to limited training examples. Thus a balance must be drawn between the two. The range of hyper-parameters to search for cross validation requires past experience working with kernels and knowledge about the given data set. However these ranges can be quite general (as shown for the Gaussian kernel where we search a space from $1e-05$ to $1e+01$) and we can iteratively narrow our search space.
 
-    Kernel Perceptron Implementation
+Comparing the two methodologies for generalising the perceptron to $k$-class classifiers, we can see that the main implementation difference is with the training process, where Algorithm 1 can update an arbitrary number of its weights to be non-zero while Algorithm 2 will update only two weights if the prediction is incorrect. In this sense, Algorithm 1 is like training $k$ independent binary classifiers, where updates are made for each sub-classifier independent of other the prediction of the others. Algorithm 2 introduces dependence between sub-classifiers during the training phase. This is because whether a sub-classifier is selected to be updated depends on if it is the label predicting classifier (i.e. the argmax) or the classifier for the actual label. Otherwise, it is not updated. In some sense, Algorithm 1 is able to pass "correction" signal to all of its classifiers at each step, while Algorithm 2 is constrained in its "speed" of training its classifiers to a maximum of two at a time. Comparing Figure~\ref{fig:2} and Figure~\ref{fig:11}, we can see that Algorithm 1 performs better than Algorithm 2 and this is likely due to this ability of Algorithm 1 to perform corrections for all its classifiers even if they are not the actual label or wrongly predicted label for a training example.
+
+Comparing Figure~\ref{fig:2} and Figure~\ref{fig:9}, we can see that the Gaussian Kernel performs better than the Polynomial Kernel. This is expected because the Gaussian Kernel provides a more expressive (infinite) feature space to model the data compared to a Polynomial kernel.
+
+These experiments were implemented by vectorising and simulating the training behaviour of this online algorithm for faster computation. However, the results exactly mimic the behaviour of the algorithms depicted. The vectorisation starts with initialising a zeros weight matrix $ \textbf{w} = \textbf{0} \in \mathbb{R}^{KxN}$. During the $j^{th}$ step of training, we only update the $j^{th}$ column of weights in $\textbf{w}$. Thus, during prediction for the $j^{th}$ training example, we know that all weights for training examples $\geq j$ will be zero and we will be simulating an online algorithm that only predicts using the $< j$ examples. Moreover during prediction, the operation $\sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i', j'}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)}$ can be factored as $ \sum_{j'=1}^{j-1} (\sum_{i'=1}^{i-1} w^{i', j'}_k ) \cdot   k(\textbf{x}_{j'}, \textbf{x}_j)}$. Thus, instead of storing a weight matrix of size $\mathbb{R}^{Kx(N \cdot M)}$, for $M$ epochs, we can sum the weights corresponding to the sample training example over multiple epochs and have a weight matrix of constant size $\mathbb{R}^{KxN}$. The kernel evaluations were also precomputed to simulate the online model and speed up computation. Precomputing the gram matrix for a kernel helps vectorise the operation. Thus during the simulated online model, the gram matrix is simply indexed at the appropriate training example to perform the weight updates. Additionally, across different hyper-parameters for a given kernels, a "pre-gram matrix" is pre-computed and used across the different hyper-parameters of a kernel. For example with a polynomial kernel, the gram matrix of inner products is computed as a "pre-gram matrix". Then for each polynomial experiment, the elements of the matrix is simply raised to the $d^{th}$ degree. This also significantly improves the speed of the experiments because a single "pre-gram matrix" can be shared across experiments during a hyper-parameter search. Although the perceptron training algorithm is sequential in nature (i.e. the new weight update depends on the weight updates of the previous step), each hyper-parameter and each run is independent. This invites the opportunity to run these in parallel, performing weight updates for multiple runs in parallel. However we ran into issues of memory constraints when trying to run this on our machine with the given data set, so our implementation did not take advantage of this.
 
 
 \newpage
@@ -264,7 +266,7 @@ Hence with minimal training information, both methods are able to predict with a
  high degree of accuracy.\\
 
 Note that error variance decreases as a function of the number of known labels, but 
-has a muhc more significant impacgt for the vanilla interpolation method.
+has a much more significant impact for the vanilla interpolation method.
 
 
 We see that the kernel approach consistently outperforms the simple laplacian
@@ -320,9 +322,30 @@ to eachother to predict labels.
 
 \newpage
 
-    \item[b.] To estimate sample complexity,
+    \item[b.] The following algorithm was used to estimate sample complexity:
 
-    Tradeoffs and biases of this method of sample complexity estimation include
+    \begin{algorithm}
+    \caption{Sample Complexity Estimation Algorithm}\label{alg:cap}
+    \begin{algorithmic}
+    \For{$n\in\{1, 2, ..., N\}$}: \Comment Number of dimensions
+        \State $\mathcal{M}_n \gets []$ \Comment Store $m$ values for each trial
+        \For {$t\in\{1, 2, ..., T\}$} \Comment Number of trials
+            \State $m \gets  0$ \Comment Number of training points
+            \State $\mathcal{D}_{train} \gets  \{\}$ \Comment Training set
+            \State $\mathcal{D}_{test} \gets  \{(x^1_{test}, y^1_{test}), ..., (x^{M'}_{test}, y^{M'}_{test})\}$ \Comment Fixed test set of size $M'$
+            \State $error \gets  1 \Comment initial test set error
+            \While{$error > 0.1$}
+                \State $m \gets  m+1$
+                \State $\mathcal{D}_{train} \gets  \mathcal{D}_{train} \cup \{(x^m_{train}, y^m_{train})\}$ \Comment Add a new training point
+                \State $error \gets model.train({D}_{train}).test({D}_{test})$ \Comment Train model and compute error
+            \EndWhile
+            \State $\mathcal{M}_n \gets \mathcal{M}_n + [m]$
+        \EndFor
+    \end{algorithmic}
+    \end{algorithm}
+    For each $\mathcal{M}_n$ the mean and standard deviation were calculated to produce the plots for each model.
+    Choosing different values for the number of trials $T$ and the test set size $M'$, is a tradeoff between limited computation resources and accuracy of our approximation. With larger number of trials, we improve our approximation, however this requires more computational resources. A larger test set size $M'$ provides a better approximation of $\{-1 ,1\}^n$ and therefore a better approximation of the generalisation error. Moreover, choosing $N$ puts a finite horizon on the number of points available for estimating the sample complexity function. For some algorithms such as one-nearest neighbours, we see that the number of training samples grows exponentially with $n$. Thus to have a plot up to 100 dimensions like with least squares, would require a lot more computational resources. As such, we limited our evaluation for one-NN to 20 dimensions. However, this can introduce biases in our estimation of the sample complexity. It is possible that our chosen finite horizon is inadequate for capturing the dynamics as $n \rightarrow \infty$. For example, a sample complexity that is actually exponential could seem linear if we do not choose an $N$ that is large enough to reveal this trend.
+
 \newpage
     \item[c.] To estimate how $m$ grows as a function of $n$ as $n \rightarrow \infty$ for each of the four algorithms, we first visualise lines of best fit of the sample complexities for different function classes (i.e. polynomial, exponential, logarithm):
 
@@ -355,9 +378,7 @@ to eachother to predict labels.
     \label{fig:22}
     \end{figure}
 
-    From these plots we can see
-
-    Comparing the performance of the four algorithms
+    From these plots we can see that the perceptron sample complexity grows linearly ($m = \Theta(n)$), the Winnow sample complexity grows logarithmically ($m = \Theta(\log(n))$), the least squares sample complexity grows linearly ($m = \Theta(n)$), and the 1-nearest neighbours sample complexity grows exponentially ($m = \Theta(e^{n})$). These estimates can be qualitatively observed by attempting to fit different function curves to the experimental results and choosing the function with the best qualitative fit. This shows that winnow is a much more robust algorithm in high dimensions due to its logarithmic scaling of the number of training points with respect to the dimensionality to achieve the same error rate. On the other hand, one-nearest neighbours scales exponentially, suggesting that it is impractical to use in high dimensional data. This can be attributed to the curse of dimensionality. Both the perceptron and least squares scale linearly, thus performing worse than winnow but better than the one-NN algorithm.
 
 \newpage
 
