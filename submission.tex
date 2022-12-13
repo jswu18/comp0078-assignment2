@@ -215,64 +215,61 @@ These experiments were implemented by vectorising and simulating the training be
 \section{PART II}
 \subsection{Semi-supervised Learning via Laplacian Interpolation}
 
-Experimental report for the laplacian interpolation approach:
-\\
+
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part2/laplacian_interpolation_report.png}
-    \caption{}
+    \caption{Laplacian Interpolation}
     \label{fig:12}
     \end{figure}
 
-\\
-
-And for the laplacian kernel method:
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part2/laplacian_kernel_interpolation_report.png}
-    \caption{}
+    \caption{Laplacian Kernel Interpolation}
     \label{fig:13}
     \end{figure}
 
-Some observations to make here are:\\
+\end{}
+\subsubsection{Discussions}
+Both models exhibit high accuracy in all low-data settings. We see here that the vast majority of datapoints are connected only to points
+of the same labelling, and that the graph is highly separated into 2 clusters.
+Hence with minimal training information, both methods are able to predict with a
+high degree of accuracy. For the laplacian seminorm interpolation method, this may be observed 
+as its solution in the objective-minimisation form essentially describes a graph cut of minimal size, respecting
+the true labels. We should note that in both of our models, the only pints that will be classified incorrectly with a 
+reasonably high probability are these teal points in the diagram above.\\
+
+b) Increasing the number of labelled datapoints generally increases the accuracy in both models.\\
+
+c) Increasing the total number of datapoints generally decreases the error variance in the seminorm interpolation
+model, but has a limited impact on the kernel interpolation model. \\
+
+d) The laplacian kernel method outperforms the vanilla inerpolation approach considerably, in accuracy, and less so
+for variance. \\
 
 
-a) Both models seem to perform fairly well, even in the low-data setting.\\
-
-b) Increating the number of known labels increases the accuracy and decreases
- the variance of the predictors.\\
-
-c) Increasing the total number of datapoints generally increases both model accuracies,
-and decreases variance. \\
-
-d) The laplacian kernel method outperforms the vanilla inerpolation approach considerably,
-on both accuracy and variance. \\
-
-
-The main reason for the success of this algorithm is the high degree of
- cluster separation observed in the dataset.
+The main reason for the success of these models is the high degree of
+cluster separation observed in the dataset.
 \\
 
-For illustration, here is a diagram representing the graph adjacency matrix,
- with colours showing the labelling of an edge. Here blue edges are where both 
+For illustration, here is a diagram representing the graph adjacency matrix for 50 labels per class,
+with colours showing the labelling of an edge. Here blue edges are where both 
 labels are -1, teal when both are different, and yellow when both are +1.\\
 
 
-\includegraphics{outputs/part2/graph_label_diagram.png}#
+\includegraphics{outputs/part2/graph_label_diagram.png}
 
-We see through this that the vast majority of datapoints are connected only to points
-of the same labelling, and that the graph is highly separated  into 2 clusters.
-Hence with minimal training information, both methods are able to predict with a
- high degree of accuracy.\\
 
 Note that error variance decreases as a function of the number of known labels, but 
-has a much more significant impact for the vanilla interpolation method.
+has a more significant impact for the vanilla interpolation method. A reasonable explanation for this is that our 
+
 
 
 We see that the kernel approach consistently outperforms the simple laplacian
- interpolation method. A reasonable explanation for this is that the laplacian
-interpolation approach utilises local information to 'diffuse' labels through the graph. 
-This means that only datapoints close to labelled data receive information from the 
+interpolation method. A reasonable explanation for this is that the laplacian
+interpolation approach utilises local information to 'diffuse' label information through the graph. 
+This means that only datapoints close to labelled data receive direct information from the 
 labels themselves, and accuracy is likely reduced for datapoints far from the labels.
 In contrast, the kernel interpolation method takes global information from all the 
 labelled datapoints and weights them according to their proximity and connectedness 
@@ -284,111 +281,16 @@ to eachother to predict labels.
 \section{PART III}
 \subsection{Questions}
 \begin{itemize}
-    \item[a.] Sample complexity plots for the four algorithms: perceptron, winnow, least squares, and 1-nearest neighbours.
-
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.6]{outputs/part3/q1a_perceptron_sample_complexity.png}
-    \caption{Perceptron Sample Complexity}
-    \label{fig:14}
-    \end{figure}
-
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.6]{outputs/part3/q1a_winnow_sample_complexity.png}
-    \caption{Winnow Sample Complexity}
-    \label{fig:15}
-    \end{figure}
-\newpage
-`
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.6]{outputs/part3/q1a_lin_reg_sample_complexity.png}
-    \caption{Least Squares Sample Complexity}
-    \label{fig:16}
-    \end{figure}
-
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.6]{outputs/part3/q1a_one_nn_sample_complexity.png}
-    \caption{1-Nearest Neighbours Sample Complexity}
-    \label{fig:17}
-    \end{figure}
-
-
-\newpage
-
-    \item[b.] The following algorithm was used to estimate sample complexity:
-
-    \begin{algorithm}
-    \caption{Sample Complexity Estimation Algorithm}\label{alg:cap}
-    \begin{algorithmic}
-    \For{$n\in\{1, 2, ..., N\}$}: \Comment Number of dimensions
-        \State $\mathcal{M}_n \gets []$ \Comment Store $m$ values for each trial
-        \For {$t\in\{1, 2, ..., T\}$} \Comment Number of trials
-            \State $m \gets  0$ \Comment Number of training points
-            \State $\mathcal{D}_{train} \gets  \{\}$ \Comment Training set
-            \State $\mathcal{D}_{test} \gets  \{(x^1_{test}, y^1_{test}), ..., (x^{M'}_{test}, y^{M'}_{test})\}$ \Comment Fixed test set of size $M'$
-            \State $error \gets  1 \Comment initial test set error
-            \While{$error > 0.1$}
-                \State $m \gets  m+1$
-                \State $\mathcal{D}_{train} \gets  \mathcal{D}_{train} \cup \{(x^m_{train}, y^m_{train})\}$ \Comment Add a new training point
-                \State $error \gets model.train({D}_{train}).test({D}_{test})$ \Comment Train model and compute error
-            \EndWhile
-            \State $\mathcal{M}_n \gets \mathcal{M}_n + [m]$
-        \EndFor
-    \end{algorithmic}
-    \end{algorithm}
-    For each $\mathcal{M}_n$ the mean and standard deviation were calculated to produce the plots for each model.
-    Choosing different values for the number of trials $T$ and the test set size $M'$, is a tradeoff between limited computation resources and accuracy of our approximation. With larger number of trials, we improve our approximation, however this requires more computational resources. A larger test set size $M'$ provides a better approximation of $\{-1 ,1\}^n$ and therefore a better approximation of the generalisation error. Moreover, choosing $N$ puts a finite horizon on the number of points available for estimating the sample complexity function. For some algorithms such as one-nearest neighbours, we see that the number of training samples grows exponentially with $n$. Thus to have a plot up to 100 dimensions like with least squares, would require a lot more computational resources. As such, we limited our evaluation for one-NN to 20 dimensions. However, this can introduce biases in our estimation of the sample complexity. It is possible that our chosen finite horizon is inadequate for capturing the dynamics as $n \rightarrow \infty$. For example, a sample complexity that is actually exponential could seem linear if we do not choose an $N$ that is large enough to reveal this trend.
-
-\newpage
-    \item[c.] To estimate how $m$ grows as a function of $n$ as $n \rightarrow \infty$ for each of the four algorithms, we first visualise lines of best fit of the sample complexities for different function classes (i.e. polynomial, exponential, logarithm):
-
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.35]{outputs/part3/q1a_perceptron_complexity_function_comparison.png}
-    \caption{Perceptron Sample Complexity vs Function Classes}
-    \label{fig:18}
-    \end{figure}
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.35]{outputs/part3/q1a_winnow_complexity_function_comparison.png}
-    \caption{Winnow Sample Complexity vs Function Classes}
-    \label{fig:19}
-    \end{figure}
-\newpage
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.35]{outputs/part3/q1a_lin_reg_complexity_function_comparison.png}
-    \caption{Least Squares Sample Complexity vs Function Classes}
-    \label{fig:21}
-    \end{figure}
-
-    \begin{figure}[h]
-    \centering
-    \includegraphics[scale=0.35]{outputs/part3/q1a_one_nn_complexity_function_comparison.png}
-    \caption{1-Nearest Neighbours Sample Complexity vs Function Classes}
-    \label{fig:22}
-    \end{figure}
-
-    From these plots we can see that the perceptron sample complexity grows linearly ($m = \Theta(n)$), the Winnow sample complexity grows logarithmically ($m = \Theta(\log(n))$), the least squares sample complexity grows linearly ($m = \Theta(n)$), and the 1-nearest neighbours sample complexity grows exponentially ($m = \Theta(e^{n})$). These estimates can be qualitatively observed by attempting to fit different function curves to the experimental results and choosing the function with the best qualitative fit. This shows that winnow is a much more robust algorithm in high dimensions due to its logarithmic scaling of the number of training points with respect to the dimensionality to achieve the same error rate. On the other hand, one-nearest neighbours scales exponentially, suggesting that it is impractical to use in high dimensional data. This can be attributed to the curse of dimensionality. Both the perceptron and least squares scale linearly, thus performing worse than winnow but better than the one-NN algorithm.
-
-\newpage
-
-    \item[d.]\\
+    \item[a.]
+    \item[b.]
+    \item[c.]
+    \item[D.]\\
     We note that since for any $X_{t}$ , $y_{t} = X_{1,t}$ , we have the following
      expression representing the linear separability of our dataset:\\
     \[(v \cdot x_{t})y_{t} \ge 1\]\\
     Where $v = (1,0, \dots, 0)^{T}$. Note that $\|v\| =1$.\\
     Hence, in our online mistake bound for the perceptron, we have that $\gamma =1$.
-    Further note that $\forall t$, $x_{t} \in {-1,1}^{n} \implies \|x_{t}\|^{2}
+    Further note that $\forall t$, $x_{t} \in \{-1,1\}^{n} \implies \|x_{t}\|^{2}
     = n$. This gives us that $R = max_{t} \|x_{t}\| = \sqrt{n}$.
     Hence our mistake bound for the perceptron algorithm is given by:\\
     
@@ -398,9 +300,7 @@ to eachother to predict labels.
 
     \[Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}\]\\
 
-\newpage
-
-     \item[e.]\\
+     \item[E.]\\
      From our experimental observations we may expect the sample complexity of 1-NN
      to be lower bounded by some exponential function. We formalise this in the
      following proposition:\\
@@ -409,12 +309,21 @@ to eachother to predict labels.
 
     Following the data-generating distribution described above, we have that our sample complexity given by:\\
 
-    $m(n) = \Omega (n)$ \\
+    $m(n) = \Omega (2^{n})$ \\
     \textbf{Proof:}\\
 
-    Suppose we sample a training set $S = \{(x_{1},y_{1}), \dots, (x_{n},y_{n})\} $ uniformly from the set $\{-1,1\}^{n}$, with associated labels
+    We note the following result on generalisation error. 
+    \\
+
+    $L_{D}(1-NN) = \mathbf{E}_{(x,y) \sim \mathcal{D}, S \sim \mathcal{D}^{m}}(\mathbf{1}_{[\mathcal{A}_{S}(x) \ne y]})$
+
+    Note that since $\mathbf{1}_{[\mathcal{A}_{S}(x) \ne f(x)]}$ is a bernoulli variable, its expectation is given by:\\
+    $ P_{x \sim \mathcal{D}, S \sim \mathcal{D}^{m}}(\mathcal{A}_{S}(x) \ne y)$, which is our new expression for the generalisation error.\\
+
+
+    Suppose we sample a training set $S = \{(x_{1},y_{1}), \dots, (x_{n},y_{n})\} $, x sampled uniformly from the set $\{-1,1\}^{n}$, with associated labels
     defined by the rule $y | x = x_{1}$, and use this training set for inference on an
-     arbitrary test point $(x,x_{1})$, sampled uniformly from the same set.
+     arbitrary test point $(x,x_{1})$, sampled uniformly from the same data generating distribution.
     \\
     We note the following observation:\\
 
@@ -428,8 +337,7 @@ to eachother to predict labels.
 
     Hence, $\mathcal{A}_{S}$ makes an error on x $\implies x \notin S$.
     
-    Hence, the set of all training sets that make an error on x is contained in the set of all
-    training sets not containing x. \\
+    Hence, $ \{S \subseteq \{-1,1\}^{n} : \mathcal{A}_{S}(x) \ne y \} \subseteq \{S \subseteq \{-1,1\}^{n} : x \notin S \} \\
 
     Hence, for a given x, $P_{S}(\mathcal{A}_{S}(x) \ne y) \le P_{S}(x \notin S)$.\\
 
@@ -444,11 +352,10 @@ to eachother to predict labels.
     \\
     \\
 
-    $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le exp(-2^{n}m)$
-    \\
+    $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le exp(-2^{-n}m)$\\
     Suppose we seek m such that our generalisation error is less than some fixed $\epsilon$. \\
     \\
-    Hence we require $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le exp(-2^{n}m) \le \epsilon$\\
+    Hence we require $\mathbb{E}_{S \sim \mathcal{D}^{m}, x \sim \mathcal{D}}[\mathcal{L}_{S}(x)] \le exp(-2^{-n}m) \le \epsilon$\\
     \\
     $\implies -m2^{-n} \le log(\epsilon)$\\
 
