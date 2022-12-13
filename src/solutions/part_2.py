@@ -29,7 +29,7 @@ def experimental_report(
     number_iterations,
 ):
     sample_range = [1, 2, 4, 8, 16]
-    accuracy = np.zeros((4, 5, number_iterations))
+    error = np.zeros((4, 5, number_iterations))
 
     for iteration in range(number_iterations):
         for i, dataset in enumerate(datasets):
@@ -41,12 +41,12 @@ def experimental_report(
                     y[sample[: 2 * sample_size]],
                     y[sample[2 * sample_size :]],
                 )
-                accuracy[i, j, iteration] = np.mean(
-                    model.predict(w[sample, :][:, sample], y_train) == y_test
+                error[i, j, iteration] = np.mean(
+                    model.predict(w[sample, :][:, sample], y_train) != y_test
                 )
                 if i == 0:
                     graph_edge_label_diagram(w, y, GRAPH_LABEL_DIAGRAM_PATH)
-    return accuracy.mean(-1), accuracy.std(-1)
+    return error.mean(-1), error.std(-1)
 
 
 def write_report_to_csv(means, stds, outpath):
@@ -56,8 +56,8 @@ def write_report_to_csv(means, stds, outpath):
     report.columns = [1, 2, 4, 8, 16]
     report.index = [50, 100, 200, 400]
     report = pd.concat(
-        [pd.concat([report], keys=["# of known labels (per class)"], axis=1)],
-        keys=["accuracy"],
+        [pd.concat([report], keys=["# of known labels per class"], axis=1)],
+        keys=["# of datapoints per class"],
     )
     dfi.export(report, outpath)
 

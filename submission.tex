@@ -215,12 +215,12 @@ These experiments were implemented by vectorising and simulating the training be
 \section{PART II}
 \subsection{Semi-supervised Learning via Laplacian Interpolation}
 
-Experimental report for the laplacian interpolation approach:
-\\
+\subsubsection{Experimental results}
+
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part2/laplacian_interpolation_report.png}
-    \caption{}
+    \caption{Laplacian Interpolation}
     \label{fig:12}
     \end{figure}
 
@@ -230,59 +230,44 @@ And for the laplacian kernel method:
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part2/laplacian_kernel_interpolation_report.png}
-    \caption{}
+    \caption{Laplacian Kernel Interpolation}
     \label{fig:13}
     \end{figure}
 
 \subsubsection{Discussions}
-Both models exhibit high accuracy in all low-data settings. We see here that the vast majority of datapoints are connected only to points
-of the same labelling, and that the graph is highly separated into 2 clusters.
-Hence with minimal training information, both methods are able to predict with a
-high degree of accuracy. For the laplacian seminorm interpolation method, this may be observed 
-as its solution in the objective-minimisation form essentially describes a graph cut of minimal size, respecting
-the true labels. We should note that in both of our models, the only pints that will be classified incorrectly with a 
-reasonably high probability are these teal points in the diagram above.\\
 
-b) Increasing the number of labelled datapoints generally increases the accuracy in both models.\\
+Some initial observations include that both models exhibit relatively high accuracy in all low-data settings. A potential justification for this may be seen by visualising 
+the adjacency matrix (Figure 12). Here blue edges are where both labels are -1, teal when both are different, and yellow when both are +1. Here we observe that the
+ graph is highly separable into 2 distinct clusters, and these clusters strongly align with label predictions. For the laplacian seminorm interpolation method, once discretised its solution in
+objective-minimisation form essentially describes a graph cut of minimal size, respecting the true labels. 
 
-c) Increasing the total number of datapoints generally decreases the error variance in the seminorm interpolation
-model, but has a limited impact on the kernel interpolation model. \\
+Here we should note that using laplacian seminorm interpolation, if a node of our 3-NN graph is connected only to nodes of opposite label, then swapping this node's label would reduce
+our objective function. Hence, at the min-cost labelling, points inside clusters tend to be given the same label and only points bridging between clusters are likely to be misclassified.
 
-d) The laplacian kernel method outperforms the vanilla inerpolation approach considerably, in accuracy, and less so
-for variance. \\
+*** todo ***
+Our next observation is that increasing the number of labelled datapoints generally increases the accuracy in both models.
 
+Increasing the total number of datapoints generally decreases the error variance in the seminorm interpolation
+model, but has a limited impact on the kernel interpolation model. 
 
-The main reason for the success of this algorithm is the high degree of
- cluster separation observed in the dataset.
-\\
+The laplacian kernel method outperforms the vanilla inerpolation approach considerably, in accuracy, and less so
+for variance. 
 
-For illustration, here is a diagram representing the graph adjacency matrix,
- with colours showing the labelling of an edge. Here blue edges are where both 
-labels are -1, teal when both are different, and yellow when both are +1.\\
+*** todo *** 
 
+We have observed how the kernel interpolation approach has significantly outperformed the seminorm interpolation method, on both error and variance.
+ A reasonable explanation for this is that the seminorm interpolation approach utilises local information to pass labels through the graph. This means that only datapoints close to labelled data receive information from the labels themselves, and accuracy is likely reduced for datapoints far from the labels. In contrast, the kernel interpolation method takes global information from all the labelled datapoints and weights them according to their connectedness through the graph to a given vertex to determine a predicted label. This use of global information helps to resolve the case in which a vertex lies on the boundary of the two clusters as the model draws conclusions directly from its connectednessto labelled points rather than recieving information from similarly ambiguous boundary points.
 
-\includegraphics{outputs/part2/graph_label_diagram.png}#
+We may postulate that the seminorm interpolation method may outperform the kernel method on datasets where global information is more ambiguous than local information: for instance, consider a graph where there are more than 2 clusters, each with coherent binary labelling, but perhaps where 2 clusters of the same label are separated by a cluster of different labelling. In this scenario, the seminorm method would label the data in 3 clusters, by only considering local edgewise label changes, but the kernel method may have difficulty correctly identifying the label for some vertices as it may be less connected to points of the same label in ground truth, than to points of a different label in the neighbouring cluster. 
 
-We see through this that the vast majority of datapoints are connected only to points
-of the same labelling, and that the graph is highly separated  into 2 clusters.
-Hence with minimal training information, both methods are able to predict with a
- high degree of accuracy.\\
+\begin{figure}[h]
+\centering
+\includegraphics[scale = 0.5]{outputs/part2/graph_label_diagram.png}
+\caption{Graph adjacency matrix for n = 50 datapoints per label}
+\label{Fig 14}
+\end{figure}
 
-Note that error variance decreases as a function of the number of known labels, but 
-has a much more significant impact for the vanilla interpolation method.
-
-
-We see that the kernel approach consistently outperforms the simple laplacian
- interpolation method. A reasonable explanation for this is that the laplacian
-interpolation approach utilises local information to 'diffuse' labels through the graph. 
-This means that only datapoints close to labelled data receive information from the 
-labels themselves, and accuracy is likely reduced for datapoints far from the labels.
-In contrast, the kernel interpolation method takes global information from all the 
-labelled datapoints and weights them according to their proximity and connectedness 
-to eachother to predict labels.
 \newpage
-
-
 
 \section{PART III}
 \subsection{Questions}
