@@ -38,7 +38,12 @@
     \EndFor
 
     \For{$i\in\{1, 2, ..., M\}$}: \Comment Number of Epochs
-        \For{$j\in\{2, ..., N\}}$ \Comment Number of training points (skipping the first point)
+        \If{i==1$} \Comment Skip first data point if it's the first epoch
+            \State $j_{init} \gets 2$
+        \Else
+            \State $j_{init} \gets 1$
+        \EndIf
+        \For{$j\in\{j_{init}, ..., N\}}$ \Comment Number of training points
             \For{$k\in\{1, 2, ..., K\}}$ \Comment Number of classes
                 \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i', j'}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
                 \If{$sign(\hat{y}_k^{i, j}) \neq sign(y_k^{i, j})$} \Comment Compare predicted $\hat{y}_k^{i, j}$ and actual $y_k^{i, j})$
@@ -52,8 +57,10 @@
     \end{algorithmic}
     \end{algorithm}
 
+        Note that $y_k^{i, j}$ is the one-hot encoding of the $j^{th}$ data point in the $i^{th}$ epoch for the $k^{th}$ class.
+
     The number of epochs was determined by training on the mini training data set until the performance of the mini testing data set no longer changed.
-    This was considered a reasonable number of epochs to use to train the actual data set.
+    This was considered a reasonable number of epochs to use to train with the actual data set.
 
     For prediction, the $k$ with the maximum value of $\hat{y}_k$ (the argmax of $\hat{y}$) is considered the label prediction by the model.
     \newpage
@@ -118,7 +125,7 @@
     \newpage
 
     \item[5.] To select a good range of values for the kernel width sigma for the Gaussian kernel, the mini training and testing sets was used to quickly gauge the test error for different hyper-parameters.
-    The hyper-parameter values above and below the best performing hyper-parameter (with respect to test set error) was chosen as the hyper-parameter range to define $S$, the set of values for cross-validation for repeating parts 1 and 2 with the Gaussian Kernel.
+    The hyper-parameter values above and below the best performing hyper-parameter (with respect to test set error) was chosen as the hyper-parameter range to define $S$, the set of values for cross-validation when repeating parts 1 and 2 with the Gaussian Kernel.
     \begin{figure}[h]
     \centering
     \includegraphics[scale=0.5]{outputs/part1/q5_1-mini.png}
@@ -157,7 +164,12 @@
     \EndFor
 
     \For{$i\in\{1, 2, ..., M\}$}: \Comment Number of Epochs
-        \For{$j\in\{2, ..., N\}}$ \Comment Number of training points
+        \If{i==1$} \Comment Skip first data point if it's the first epoch
+            \State $j_{init} \gets 2$
+        \Else
+            \State $j_{init} \gets 1$
+        \EndIf
+        \For{$j\in\{j_{init}, ..., N\}}$ \Comment Number of training points
             \For{$k\in\{1, 2, ..., K\}}$ \Comment Number of classes
                 \State $\hat{y}_k^{i, j} \gets  \sum_{i'=1}^{i-1} \sum_{j'=1}^{j-1} ( w^{i', j}_k \cdot  k(\textbf{x}_{j'}, \textbf{x}_j)} )$ \Comment{Prediction for class $k$ with kernel $k(\cdot, \cdot)$}
             \EndFor
@@ -202,7 +214,7 @@
 \subsubsection{Discussions}
 
 
-For these experiments, the number of folds, number of runs, and train/test split were parameters that were arbitrarily chosen, not chosen through cross-validation. Moreover, the kernel parameters were cross-validated to find optimal values, however the range for which cross validation was performed over (i.e. degree 1 to 7 for the polynomial kernel) was chosen relatively arbitrarily. For Gaussian kernels, this was done in a two step process, where a very wide range for sigma was initially used, although this wide range was still chosen arbitrarily. Increasing the number of folds would provide a better estimate of the out of sample performance (i.e. in the limit where we have N folds, each training on $N-1$ points and testing on the single excluded data point). However, this can be quite computationally heavy and a compromise must be drawn. This a similar situation for the number of runs. By increasing the number of runs, we gain a better understanding of average performance, however this is at a computational cost of performing more runs. The train/test split used for these experiments was 80\% training data and 20\% testing data. This follows general rule of thumb for train/test splits. Given a finite data set size, increasing the training percentage can provide inaccurate out of sample performance with the test set. Conversly, a smaller training percentage can poorly represent the model's performance due to limited training examples. Thus a balance must be drawn between the two. The range of hyper-parameters to search for cross validation requires past experience working with kernels and knowledge about the given data set. However these ranges can be quite general (as shown for the Gaussian kernel where we search a space from $1e-05$ to $1e+01$) and we can iteratively narrow our search space.
+For these experiments, the number of folds, number of runs, and train/test split were parameters that were arbitrarily chosen, not chosen through cross-validation. Moreover, the kernel parameters were cross-validated to find optimal values, however the range for which cross validation was performed over (i.e. degree 1 to 7 for the polynomial kernel) was chosen relatively arbitrarily. For Gaussian kernels, this was done in a two step process, where a very wide range for sigma was initially used, although this wide range was still chosen arbitrarily. Increasing the number of folds would provide a better estimate of the out of sample performance (i.e. in the limit where we have N folds, each training on $N-1$ points and testing on the single excluded data point). However, this can be quite computationally heavy and a compromise must be drawn. This a similar situation for the number of runs. By increasing the number of runs, we gain a better understanding of average performance, however this is at a computational cost of performing more runs. The train/test split used for these experiments was 80\% training data and 20\% testing data. This follows general rule of thumb for train/test splits. Given a finite data set size, increasing the training percentage can provide inaccurate out of sample performance with  the small test set. Conversely, a smaller training percentage can poorly represent the model's performance due to limited training examples. Thus a balance must be drawn between the two. The range of hyper-parameters to search for cross validation requires past experience working with kernels and knowledge about the given data set. However these ranges can be quite general (as shown for the Gaussian kernel where we search a space from $1e-05$ to $1e+01$) and we can iteratively narrow our search space.
 
 Comparing the two methodologies for generalising the perceptron to $k$-class classifiers, we can see that the main implementation difference is with the training process, where Algorithm 1 can update an arbitrary number of its weights to be non-zero while Algorithm 2 will update only two weights if the prediction is incorrect. In this sense, Algorithm 1 is like training $k$ independent binary classifiers, where updates are made for each sub-classifier independent of other the prediction of the others. Algorithm 2 introduces dependence between sub-classifiers during the training phase. This is because whether a sub-classifier is selected to be updated depends on if it is the label predicting classifier (i.e. the argmax) or the classifier for the actual label. Otherwise, it is not updated. In some sense, Algorithm 1 is able to pass "correction" signal to all of its classifiers at each step, while Algorithm 2 is constrained in its "speed" of training its classifiers to a maximum of two at a time. Comparing Figure~\ref{fig:2} and Figure~\ref{fig:11}, we can see that Algorithm 1 performs better than Algorithm 2 and this is likely due to this ability of Algorithm 1 to perform corrections for all its classifiers even if they are not the actual label or wrongly predicted label for a training example.
 
@@ -236,7 +248,7 @@ And for the laplacian kernel method:
 \begin{itemize}
     \item[2.]
         Some initial observations include that both models exhibit relatively high accuracy in all low-data settings. Additionally, both error and variance are observed to decrease as a function of both number of samples and number of total datapoints.
-        Further, we observe that the kernel interpolation approach gives lower error and variance across all experiments, and also is less severely effected by sample number.
+        Further, we observe that the kernel interpolation approach gives lower error and variance across all experiments, and also is less severely affected by sample number.
     \item[3.]
         To analyse this difference in model performance, we first perform a visualisation of our induced 3-NN graph seen in \textbf{Fig 14}: note that blue edges are where both labels are -1, teal when both are different, and yellow when both are +1.
         From our diagram we can observe that the graph is highly separable into 2 distinct clusters, and these clusters strongly align with label predictions. 
@@ -325,7 +337,7 @@ And for the laplacian kernel method:
     \end{algorithmic}
     \end{algorithm}
     For each $\mathcal{M}_n$ the mean and standard deviation were calculated to produce the plots for each model.
-    Choosing different values for the number of trials $T$ and the test set size $M'$, is a tradeoff between limited computation resources and accuracy of our approximation. With larger number of trials, we improve our approximation, however this requires more computational resources. A larger test set size $M'$ provides a better approximation of $\{-1 ,1\}^n$ and therefore a better approximation of the generalisation error. Moreover, choosing $N$ puts a finite horizon on the number of points available for estimating the sample complexity function. For some algorithms such as one-nearest neighbours, we see that the number of training samples grows exponentially with $n$. Thus to have a plot up to 100 dimensions like with least squares, would require a lot more computational resources. As such, we limited our evaluation for one-NN to 20 dimensions. However, this can introduce biases in our estimation of the sample complexity. It is possible that our chosen finite horizon is inadequate for capturing the dynamics as $n \rightarrow \infty$. For example, a sample complexity that is actually exponential could seem linear if we do not choose an $N$ that is large enough to reveal this trend.
+    Choosing different values for the number of trials $T$ and the test set size $M'$, is a tradeoff between limited computation resources and accuracy of our approximation. With larger number of trials, we improve our approximation, however this requires more computational resources. A larger test set size $M'$ provides a better approximation of $\{-1 ,1\}^n$ and therefore a better approximation of the generalisation error. Moreover, choosing $N$ puts a finite horizon on the number of points available for estimating the sample complexity function. For some algorithms such as one-nearest neighbours, we see that the number of training samples grows exponentially with $n$. Thus to have a plot up to 100 dimensions like with least squares, would require a lot more computational resources. As such, we limited our evaluation for one-NN to 20 dimensions. However, this can introduce biases in our estimation of the sample complexity. It is possible that our chosen finite horizon is inadequate for capturing the dynamics as $n \rightarrow \infty$. For example, a sample complexity that is actually quadratic could seem linear if we do not choose an $N$ that is large enough to reveal this trend.
 
 \newpage
     \item[c.] To estimate how $m$ grows as a function of $n$ as $n \rightarrow \infty$ for each of the four algorithms, we first visualise lines of best fit of the sample complexities for different function classes (i.e. polynomial, exponential, logarithm):
@@ -359,11 +371,11 @@ And for the laplacian kernel method:
     \label{fig:22}
     \end{figure}
 
-    From these plots we can see that may observe:
+    From these plots we may observe:
     
     Perceptron sample complexity grows linearly ($m = \Theta(n)$), and the Winnow sample complexity grows logarithmically ($m = \Theta(\log(n))$). The corresponding asymptotic lower bound results will be proven analytically in the next section.
 
-    The least squares sample complexity grows linearly ($m = \Theta(n)$). We may aslo prove this analytically: note that a linear regression classifier is exactly the same as the 'half space' model shown on page 48 of the learning theory notes,
+    The least squares sample complexity grows linearly ($m = \Theta(n)$). We may also prove this analytically: note that a linear regression classifier is exactly the same as the 'half space' model shown on page 48 of the learning theory notes,
      with dimension n. Hence we determine that the VC dimension of the least squares classifier is n. Hence, the fundamental theorem of statistical learning determines that for fixed
      $\epsilon$, $\delta$, the sample complexity of our least squares classifier is bounded above and below by expressions linear in n. 
 
@@ -393,7 +405,7 @@ And for the laplacian kernel method:
 
     $Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}$
 
-    \textbf{Corrolary}
+    \textbf{Corollary}
 
     This result gives us a lower bound on sample complexity for the perceptron algorithm:
 
