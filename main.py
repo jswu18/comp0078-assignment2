@@ -25,12 +25,12 @@ from src.solutions import part_1, part_2, part_3
 np.random.seed(DEFAULT_SEED)
 
 
-def part_1_preprocess(data):
-    x_data, labels = data[:, 1:], data[:, 0]
+#def part_1_preprocess(data):
+   # x_data, labels = data[:, 1:], data[:, 0]
     # shift so that our labels start at zero
-    shifted_labels = labels - np.min(labels)
-    y_data = one_hot_encode(shifted_labels)
-    return x_data, y_data, labels
+   # shifted_labels = labels - np.min(labels)
+  #  y_data = one_hot_encode(shifted_labels)
+ #   return x_data, y_data, labels
 
 
 if __name__ == "__main__":

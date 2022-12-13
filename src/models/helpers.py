@@ -69,6 +69,12 @@ def one_hot_encode(shifted_labels: np.ndarray) -> np.ndarray:
 
 
 def ssl_data_sample(y, sample_size):
+    """
+    :param y: array of labels for our dataset
+    :param sample_size: number of samples required
+
+    :return: permutation of our original indices such that the first 
+    """
     idxs = np.random.choice(
         list(np.where(y == -1.0)[0]), size=sample_size, replace=False
     ).tolist()
@@ -80,6 +86,9 @@ def ssl_data_sample(y, sample_size):
 
 
 def knn_adjacency_matrix(x, k):
+    """
+    Given a design matrix x, generate an adjacency matrix of the K-NN graph of x
+    """
     tree = KDTree(x)
     n = x.shape[0]
     graph = tree.query(x, k)[1][:, 1:]

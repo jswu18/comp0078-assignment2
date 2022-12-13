@@ -224,8 +224,6 @@ These experiments were implemented by vectorising and simulating the training be
     \label{fig:12}
     \end{figure}
 
-\\
-
 And for the laplacian kernel method:
     \begin{figure}[h]
     \centering
@@ -235,30 +233,25 @@ And for the laplacian kernel method:
     \end{figure}
 
 \subsubsection{Discussions}
+\begin{itemize}
+    \item[2.]
+        Some initial observations include that both models exhibit relatively high accuracy in all low-data settings. Additionally, both error and variance are observed to decrease as a function of both number of samples and number of total datapoints.
+        Further, we observe that the kernel interpolation approach gives lower error and variance across all experiments, and also is less severely effected by sample number.
+    \item[3.]
+        To analyse this difference in model performance, we first perform a visualisation of our induced 3-NN graph seen in \textbf{Fig 14}: note that blue edges are where both labels are -1, teal when both are different, and yellow when both are +1.
+        From our diagram we can observe that the graph is highly separable into 2 distinct clusters, and these clusters strongly align with label predictions. 
 
-Some initial observations include that both models exhibit relatively high accuracy in all low-data settings. A potential justification for this may be seen by visualising 
-the adjacency matrix (Figure 12). Here blue edges are where both labels are -1, teal when both are different, and yellow when both are +1. Here we observe that the
- graph is highly separable into 2 distinct clusters, and these clusters strongly align with label predictions. For the laplacian seminorm interpolation method, once discretised its solution in
-objective-minimisation form essentially describes a graph cut of minimal size, respecting the true labels. 
-
-Here we should note that using laplacian seminorm interpolation, if a node of our 3-NN graph is connected only to nodes of opposite label, then swapping this node's label would reduce
-our objective function. Hence, at the min-cost labelling, points inside clusters tend to be given the same label and only points bridging between clusters are likely to be misclassified.
-
-*** todo ***
-Our next observation is that increasing the number of labelled datapoints generally increases the accuracy in both models.
-
-Increasing the total number of datapoints generally decreases the error variance in the seminorm interpolation
-model, but has a limited impact on the kernel interpolation model. 
-
-The laplacian kernel method outperforms the vanilla inerpolation approach considerably, in accuracy, and less so
-for variance. 
-
-*** todo *** 
-
-We have observed how the kernel interpolation approach has significantly outperformed the seminorm interpolation method, on both error and variance.
- A reasonable explanation for this is that the seminorm interpolation approach utilises local information to pass labels through the graph. This means that only datapoints close to labelled data receive information from the labels themselves, and accuracy is likely reduced for datapoints far from the labels. In contrast, the kernel interpolation method takes global information from all the labelled datapoints and weights them according to their connectedness through the graph to a given vertex to determine a predicted label. This use of global information helps to resolve the case in which a vertex lies on the boundary of the two clusters as the model draws conclusions directly from its connectednessto labelled points rather than recieving information from similarly ambiguous boundary points.
-
-We may postulate that the seminorm interpolation method may outperform the kernel method on datasets where global information is more ambiguous than local information: for instance, consider a graph where there are more than 2 clusters, each with coherent binary labelling, but perhaps where 2 clusters of the same label are separated by a cluster of different labelling. In this scenario, the seminorm method would label the data in 3 clusters, by only considering local edgewise label changes, but the kernel method may have difficulty correctly identifying the label for some vertices as it may be less connected to points of the same label in ground truth, than to points of a different label in the neighbouring cluster. 
+        A reasonable explanation for the kernel approach's superior performance follows from the observation that seminorm interpolation propagates local information to pass labels through the graph, whereas the kernel method utilises global graph connectivity
+        properties of each point to a set of labels to make predictions.
+        This means that in the seminorm method, only datapoints close to labelled data receive information from the labels themselves, and accuracy is likely reduced for datapoints far from the labels as label information is passed indirectly through the graph.
+        Further if a point is close the the boundary of a cluster, it may be be misclassified due to its proximity to a single label from the other cluster. 
+        In contrast, the kernel interpolation method takes global information from all the labelled datapoints and weights them according to their connectedness through the graph to a given vertex to determine a predicted label.
+        A vertex will only be given a label if it is more strongly connected to all labelled points that have this label. This use of global information helps to resolve the case in which a vertex lies on the boundary of the two clusters as the model draws
+        conclusions directly from its connectedness to labelled points rather than recieving information from similarly ambiguous boundary points. However, we should note that this superior performance is an artifact of the dataset,
+        and that it separates well into one cluster per datapoint: this implies that if a vertex is more strongly connected to points with label +1, then it is most likely given this label in reality.
+    \item[4.]
+        We may postulate that the seminorm interpolation method may outperform the kernel method on datasets where global information is more ambiguous than local information: for instance, consider a graph where there are more than 2 clusters, each with coherent binary labelling, but perhaps where 2 clusters of the same label are separated by a cluster of different labelling. In this scenario, the seminorm method would label the data in 3 clusters, by only considering local edgewise label changes, but the kernel method may have difficulty correctly identifying the label for some vertices as it may be less connected to points of the same label in ground truth, than to points of a different label in the neighbouring cluster. 
+\end{itemize}
 
 \begin{figure}[h]
 \centering
@@ -321,7 +314,7 @@ We may postulate that the seminorm interpolation method may outperform the kerne
             \State $m \gets  0$ \Comment Number of training points
             \State $\mathcal{D}_{train} \gets  \{\}$ \Comment Training set
             \State $\mathcal{D}_{test} \gets  \{(x^1_{test}, y^1_{test}), ..., (x^{M'}_{test}, y^{M'}_{test})\}$ \Comment Fixed test set of size $M'$
-            \State $error \gets  1 \Comment initial test set error
+            \State  error \gets  1 \Comment initial test set error
             \While{$error > 0.1$}
                 \State $m \gets  m+1$
                 \State $\mathcal{D}_{train} \gets  \mathcal{D}_{train} \cup \{(x^m_{train}, y^m_{train})\}$ \Comment Add a new training point
@@ -366,25 +359,52 @@ We may postulate that the seminorm interpolation method may outperform the kerne
     \label{fig:22}
     \end{figure}
 
-    From these plots we can see that the perceptron sample complexity grows linearly ($m = \Theta(n)$), the Winnow sample complexity grows logarithmically ($m = \Theta(\log(n))$), the least squares sample complexity grows linearly ($m = \Theta(n)$), and the 1-nearest neighbours sample complexity grows exponentially ($m = \Theta(e^{n})$). These estimates can be qualitatively observed by attempting to fit different function curves to the experimental results and choosing the function with the best qualitative fit. This shows that winnow is a much more robust algorithm in high dimensions due to its logarithmic scaling of the number of training points with respect to the dimensionality to achieve the same error rate. On the other hand, one-nearest neighbours scales exponentially, suggesting that it is impractical to use in high dimensional data. This can be attributed to the curse of dimensionality. Both the perceptron and least squares scale linearly, thus performing worse than winnow but better than the one-NN algorithm.
+    From these plots we can see that may observe:
+    
+    Perceptron sample complexity grows linearly ($m = \Theta(n)$), and the Winnow sample complexity grows logarithmically ($m = \Theta(\log(n))$). The corresponding asymptotic lower bound results will be proven analytically in the next section.
 
-\newpage
+    The least squares sample complexity grows linearly ($m = \Theta(n)$). We may aslo prove this analytically: note that a linear regression classifier is exactly the same as the 'half space' model shown on page 48 of the learning theory notes,
+     with dimension n. Hence we determine that the VC dimension of the least squares classifier is n. Hence, the fundamental theorem of statistical learning determines that for fixed
+     $\epsilon$, $\delta$, the sample complexity of our least squares classifier is bounded above and below by expressions linear in n. 
 
-    \item[d.]\\
+    Finally, the 1-nearest neighbours sample complexity grows exponentially ($m = \Theta(e^{n})$).
+
+    These estimates can be qualitatively observed by attempting to fit different function curves to the experimental
+    results and choosing the function with the best qualitative fit. This shows that winnow is a much more robust 
+    algorithm in high dimensions due to its logarithmic scaling of the number of training points with respect to
+        the dimensionality to achieve the same error rate. On the other hand, one-nearest neighbours scales exponentially,
+        suggesting that it is impractical to use in high dimensional data. This can be attributed to the curse of dimensionality.
+        Both the perceptron and least squares scale linearly, thus performing worse than winnow but better than the one-NN algorithm.
+
+
+    \item[d.]
     We note that since for any $X_{t}$ , $y_{t} = X_{1,t}$ , we have the following
-     expression representing the linear separability of our dataset:\\
-    \[(v \cdot x_{t})y_{t} \ge 1\]\\
-    Where $v = (1,0, \dots, 0)^{T}$. Note that $\|v\| =1$.\\
-    Hence, in our online mistake bound for the perceptron, we have that $\gamma =1$.
+     expression representing the linear separability of our dataset:
+    $(v \cdot x_{t})y_{t} \ge 1$
+    Where $v = (1,0, \dots, 0)^{T}$. Note that $\|v\| =1$.
+    Hence, in our online mistake bound for the perceptron, we have that our margin parameter $\gamma =1$.
     Further note that $\forall t$, $x_{t} \in {-1,1}^{n} \implies \|x_{t}\|^{2}
     = n$. This gives us that $R = max_{t} \|x_{t}\| = \sqrt{n}$.
-    Hence our mistake bound for the perceptron algorithm is given by:\\
+    Hence our mistake bound for the perceptron algorithm is given by:
     
-    \[M \le n \].\\
+    $M \le n $.
 
-    Using the theorem on page 60 of the online learning notes, we arrive at:\\
+    The theorem on page 60 of the online learning notes relates mistake bounds to batch generalisation error bounds:
 
-    \[Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}\]\\
+    $Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}$
+
+    \textbf{Corrolary}:}
+    This result gives us a lower bound on sample complexity for the perceptron algorithm:
+
+    Suppose we require out generalisation error $ Prob(\mathcal{A_{S}}(x ^{\prime}) \ne y^{\prime} ) \le \frac{n}{m}$ to be  less than some fixed $\epsilon$.
+
+    $\implies \frac{n}{m} \le \epsilon \implies m \ge \frac{n}{\epsilon}$
+
+    Note that given the mistake bound on winnow given by $ M \ge 3 (log(n) + 1) +2$ (note k=1 since the ground truth is a 1-literal conjunction given by $x_{1}$), following the same approach we arrive at a lower bound on sample complexity for winnow that
+    matches our experimental observations:
+
+    $m(n) \ge \frac{3 (log(n) + 1) +2}{\epsilon} = \Omega (log(n))$
+
 
 \newpage
 
@@ -397,7 +417,7 @@ We may postulate that the seminorm interpolation method may outperform the kerne
 
     Following the data-generating distribution described above, we have that our sample complexity given by:\\
 
-    $m(n) = \Omega (n)$ \\
+    $m(n) = \Omega (2^{n})$ \\
     \textbf{Proof:}\\
 
     Suppose we sample a training set $S = \{(x_{1},y_{1}), \dots, (x_{n},y_{n})\} $ uniformly from the set $\{-1,1\}^{n}$, with associated labels

@@ -76,7 +76,6 @@ def graph_edge_label_diagram(w, y, outpath):
     for i, y1 in enumerate(y):
         for j, y2 in enumerate(y):
             edge_colours[i, j] = edge_colour(y1, y2)
-
     plt.imshow(w * edge_colours)
     plt.savefig(outpath)
 
