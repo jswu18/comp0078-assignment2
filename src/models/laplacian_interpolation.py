@@ -16,9 +16,9 @@ class LaplacianInterpolation:
         :return: y_hat: predicted labels for y_{l+1}, ... , y_{n}
         """
         s = y.shape[0]
-        degree_matrix = np.diag(w.sum(0))
+        diagonal = np.diag(w.sum(0))
         return np.sign(
-            np.linalg.lstsq(degree_matrix[s:, s:] - w[s:, s:], w[s:, :s] @ y, rcond=None)[0]
+            np.linalg.lstsq(diagonal[s:, s:] - w[s:, s:], w[s:, :s] @ y, rcond=None)[0]
         )
 
 
