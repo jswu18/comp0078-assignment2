@@ -17,9 +17,7 @@ class LaplacianInterpolation:
         """
         s = y.shape[0]
         diagonal = np.diag(w.sum(0))
-        return np.sign(
-            np.linalg.lstsq(diagonal[s:, s:] - w[s:, s:], w[s:, :s] @ y, rcond=None)[0]
-        )
+        return np.sign(np.linalg.pinv(diagonal[s:, s:] - w[s:, s:]) @ (w[s:, :s] @ y))
 
 
 class LaplacianKernelInterpolation:

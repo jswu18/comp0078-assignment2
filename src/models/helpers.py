@@ -73,7 +73,7 @@ def ssl_data_sample(y, sample_size):
     :param y: array of labels for our dataset
     :param sample_size: number of samples required
 
-    :return: permutation of our original indices such that the first 
+    :return: permutation of our original indices such that the first
     """
     idxs = np.random.choice(
         list(np.where(y == -1.0)[0]), size=sample_size, replace=False
