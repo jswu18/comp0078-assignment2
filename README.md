@@ -1,4 +1,4 @@
-# comp0078-assignment2
+# Supervised Learning 2
 
 Assignment #2 for Supervised Learning (COMP0078) at UCL 2022
 
